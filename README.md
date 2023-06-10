@@ -1,2 +1,2 @@
-# Radio-contolled-airplane-system
+# Radio controlled airplane system
 Embedded C
