@@ -24,10 +24,10 @@ I have written a rough TODO list for the workflow I intend to follow, the list w
 The list will be separated into 2 sections. A DONE section and a TODO section.
 
 DONE:
-
+1. Make the joystick work and get its analog input into the ESP32.(Testing purposes)
 
 TODO:
-1. Make the joystick work and get its analog input into the ESP32.(Testing purposes)
+
 2. Make the servo move as intended from the input from the joystick on the ESP32.(Testing purposes)
 3. Write/find a library for the NRF24L01 transceiver.
 4. Test that I can send a message from TX to RX MCUs using the NRF24L01 transceiver.
@@ -38,5 +38,7 @@ TODO:
 9. Create additional functions like a arming function, trims etc.
 10. (OPTIONAL) GPS functionality.
 
-
+PROBLEMS:
+If the joystick y axis is pulled to the top reading 4095, x axis also reads 4096?? Should be ~2650.
+If the joystick x axis is pulled to the right reading 4095, y axis also reads 4096?? Should be ~2650.
 
