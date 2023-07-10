@@ -39,6 +39,7 @@ TODO:
 10. (OPTIONAL) GPS functionality.
 
 PROBLEMS:
-If the joystick y axis is pulled to the top reading 4095, x axis also reads 4096?? Should be ~2650.
-If the joystick x axis is pulled to the right reading 4095, y axis also reads 4096?? Should be ~2650.
+If the joystick y axis is pulled to the top reading 4095, x axis also reads 4095?? Should be ~2650. SOLVED: joystick voltage should not be 5V but use the 3.3v instead as the ADC can no tread up to 5V.
+
+If the joystick x axis is pulled to the right reading 4095, y axis also reads 4095?? Should be ~2650.SOLVED: joystick voltage should not be 5V but use the 3.3v instead as the ADC can no tread up to 5V.
 
