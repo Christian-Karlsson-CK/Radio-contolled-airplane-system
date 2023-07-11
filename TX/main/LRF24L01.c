@@ -6,6 +6,9 @@
 #include "driver/spi_common.h"
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #define SPIHOST VSPI_HOST //Using VSPI on ESP32 SPIHOST = The SPI controller peripheral inside ESP32. VSPI_HOST = SPI3_HOST=2
 #define PIN_NUM_MISO 19   // SPI PINS
@@ -18,9 +21,6 @@
 //#define NRF24_SPI &hspi1
 
 static const char *TAG = "example";
-
-void SPI_init(spi_device_handle_t*);
-
 
 
 void SPI_init(spi_device_handle_t *spi_device_handle){
@@ -143,7 +143,7 @@ void nrf24_WriteRegisterMulti(uint8_t reg, uint8_t *data, spi_device_handle_t *s
 }
 
 
-uint8_t ReadReg(uint8_t reg, spi_device_handle_t *spi_device_handle){
+uint8_t NRF24_ReadReg(uint8_t reg, spi_device_handle_t *spi_device_handle){
 
     uint8_t data;
 
@@ -226,7 +226,6 @@ void nrfsendCmd (uint8_t cmd, spi_device_handle_t *spi_device_handle)
 void NRF24_Init(spi_device_handle_t *spi_device_handle){
 
     CE_Disable();
-    CS_UnSelect(); //This call is not needed but for extra safety i guess.
 
     nrf24_WriteRegister(CONFIG, 0, spi_device_handle); //Will be configured later.
 
@@ -242,9 +241,71 @@ void NRF24_Init(spi_device_handle_t *spi_device_handle){
 
     nrf24_WriteRegister(RF_SETUP, 0x0E, spi_device_handle); //Power = 0dbm,  data rate = 2mbps
 
-    
-
+    CE_Enable();
 }
+
+
+void NRF24_TXMode(uint8_t *Address, uint8_t channel, spi_device_handle_t *spi_device_handle){ //put the NRF24L01 in TXMode
+
+    CE_Disable();
+
+    nrf24_WriteRegister(RF_CH, channel, spi_device_handle); //Choose a channel
+
+    nrf24_WriteRegisterMulti(TX_ADDR, Address, spi_device_handle, 5); // Write the TX address
+
+    //Power up the NRF24L01
+    uint8_t config = NRF24_ReadReg(CONFIG, spi_device_handle); //Read the current settings.
+    config = config | (1<<1);  //If not already a 1, change first bit to 1. That position will make the device power up.
+    nrf24_WriteRegister(CONFIG, config, spi_device_handle); //The write it back
+    //Doing it this way will prevent other bits from changing.
+
+    CE_Enable();
+}
+
+uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t *spi_device_handle){
+    CS_Select();
+
+    uint8_t cmdToSend = W_TX_PAYLOAD; //this command tells the LRF24L01 that following this a payload will be sent.
+
+    spi_transaction_t trans[2] = {
+        {
+        .length = 8,  // Length in bits of command
+        .tx_buffer = &cmdToSend, //Command to send
+        .rx_buffer = NULL,
+        .user = NULL,
+        },
+        {
+        .length = 8 * 32,  // Length in bits of payload we have set the payload length to 32 bytes(i think)
+        .tx_buffer = payload,
+        .rx_buffer = NULL,
+        .user = NULL,
+        }
+    };
+
+    CS_Select();
+
+	esp_err_t ret = spi_device_transmit(*spi_device_handle, &trans);
+    ESP_ERROR_CHECK(ret);
+
+    CS_UnSelect();
+
+    vTaskDelay(pdMS_TO_TICKS(1)); //Delay for the pin to settle
+
+    uint8_t fifoStatus = NRF24_ReadReg(FIFO_STATUS, spi_device_handle); //Read fifo status to see if LRF24L01 properly received transmission.
+                                                                        //FIFO = first-in-first-out    
+    
+    if((fifoStatus & (1<<4)) && (!(fifoStatus & (1<<3)))){
+        cmdToSend = FLUSH_TX;
+        nrfsendCmd(cmdToSend, spi_device_handle);
+        return 1;
+    }
+    return 0;
+}
+
+
+
+
+
 
 
 

@@ -29,6 +29,8 @@ idf.py flash -p COM3 monitor
 #include "driver/spi_common.h"
 #include "driver/spi_master.h"
 
+#include "LRF24L01.h"
+
 //NRF24L01 PINS
 #define SPIHOST VSPI_HOST //Using VSPI on ESP32 SPIHOST = The SPI controller peripheral inside ESP32. VSPI_HOST = SPI3_HOST=2
 #define PIN_NUM_MISO 19   // SPI PINS
@@ -65,23 +67,32 @@ void app_main(void)
 
     SPI_init(&spi_device_handle);
 
+    uint8_t TxAddress[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA};
+    uint8_t TxData[] = "Hello World\n";
+
+    NRF24_Init(&spi_device_handle);
+
+    NRF24_TXMode(TxAddress, 10, &spi_device_handle);
 
 
     while (true)
     {   
         
-        //int xReading = adc1_get_raw(ADC1_CHANNEL_0);
-        //int yReading = adc1_get_raw(ADC1_CHANNEL_3);
+        int xReading = adc1_get_raw(ADC1_CHANNEL_0);
+        int yReading = adc1_get_raw(ADC1_CHANNEL_3);
 
 
 
-        //ESP_LOGI(TAG, "Y: %d, X:%d", yReading, xReading);
+        ESP_LOGI(TAG, "Y: %d, X:%d", yReading, xReading);
 
+        if(NRF24_Transmit(TxData, &spi_device_handle)){
+            ESP_LOGI(TAG, "Transmitted data is received! Woohoo");
+        }
 
-        ESP_LOGI(TAG, "Y: %d, X:%d");
+        //ESP_LOGI(TAG, "Y: %d, X:%d");
 
-
-        vTaskDelay(100);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        //vTaskDelay(100);
     }
     
 

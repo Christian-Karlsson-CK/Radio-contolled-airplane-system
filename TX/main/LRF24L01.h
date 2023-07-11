@@ -8,8 +8,23 @@
 
 void SPI_init(spi_device_handle_t*);
 
+void CS_Select();
+void CS_Unselect();
+void CE_Enable();
+void CE_Disable();
+
 void nrf24_WriteRegister(uint8_t, uint8_t, spi_device_handle_t*);
+void nrf24_WriteRegisterMulti(uint8_t, uint8_t*, spi_device_handle_t*, int);
+
 uint8_t ReadReg(uint8_t, spi_device_handle_t*);
+void ReadRegMulti(uint8_t, uint8_t*, int, spi_device_handle_t*);
+
+void nrfsendCmd (uint8_t, spi_device_handle_t*);
+
+void NRF24_Init(spi_device_handle_t*);
+
+void NRF24_TXMode(uint8_t*, uint8_t, spi_device_handle_t*);
+uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t* spi_handle);
 
 
 
