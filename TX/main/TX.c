@@ -13,7 +13,7 @@ idf.py monitor -p COM3
 	få in händelser direkt från MCUn
 
 idf.py flash -p COM3 monitor
-    flasha till MCU, monitor är optional om man vill övervaka.
+    builda & flasha till MCU, monitor är optional om man vill övervaka.
 
 
 */
@@ -25,19 +25,19 @@ idf.py flash -p COM3 monitor
 #include "esp_log.h"
 #include "driver/adc.h"
 
-#include "hal/spi_types.h"
+//#include "hal/spi_types.h"
 #include "driver/spi_common.h"
 #include "driver/spi_master.h"
 
 #include "LRF24L01.h"
 
 //NRF24L01 PINS
-#define SPIHOST VSPI_HOST //Using VSPI on ESP32 SPIHOST = The SPI controller peripheral inside ESP32. VSPI_HOST = SPI3_HOST=2
+#define SPIHOST HSPI_HOST //Using VSPI on ESP32 SPIHOST = The SPI controller peripheral inside ESP32. VSPI_HOST = SPI3_HOST=2
 #define PIN_NUM_MISO 19   // SPI PINS
 #define PIN_NUM_MOSI 23
 #define PIN_NUM_CLK  18
-#define PIN_NUM_CS   5    //To the CSN pin on the LRF24L01+. used to select the specific SPI device with which the ESP32 wants to communicate.
-#define PIN_NUM_CE   17   //used to control the NRF24L01 module's operation mode.
+#define PIN_NUM_CS   17    //To the CSN pin on the LRF24L01+. used to select the specific SPI device with which the ESP32 wants to communicate.
+#define PIN_NUM_CE   16   //used to control the NRF24L01 module's operation mode.
 
 //Joystick 1 PINS
 #define PIN_NUM_X      36
@@ -51,10 +51,9 @@ static const char *TAG = "example";
 
 void app_main(void)
 {
-
+    //Joystick
     gpio_set_direction(PIN_NUM_X, GPIO_MODE_INPUT); //X axis
     gpio_set_direction(PIN_NUM_Y, GPIO_MODE_INPUT); //Y axis
-
     gpio_set_direction(PIN_NUM_BUTTON, GPIO_MODE_INPUT); //Joystick button
     gpio_set_pull_mode(PIN_NUM_BUTTON, GPIO_PULLUP_ONLY);
 
@@ -72,7 +71,7 @@ void app_main(void)
 
     NRF24_Init(&spi_device_handle);
 
-    NRF24_TXMode(TxAddress, 10, &spi_device_handle);
+    //NRF24_TXMode(TxAddress, 10, &spi_device_handle);
 
 
     while (true)
@@ -85,9 +84,9 @@ void app_main(void)
 
         ESP_LOGI(TAG, "Y: %d, X:%d", yReading, xReading);
 
-        if(NRF24_Transmit(TxData, &spi_device_handle)){
-            ESP_LOGI(TAG, "Transmitted data is received! Woohoo");
-        }
+        //if(NRF24_Transmit(TxData, &spi_device_handle)){
+        //    ESP_LOGI(TAG, "Transmitted data is received! Woohoo");
+        //}
 
         //ESP_LOGI(TAG, "Y: %d, X:%d");
 

@@ -25,12 +25,15 @@ The list will be separated into 2 sections. A DONE section and a TODO section.
 
 DONE:
 1. Make the joystick work and get its analog input into the ESP32.(Testing purposes)
+3. Write/find a library for the NRF24L01 transceiver.
+3.1 Test that registers is properly read and written to. (This took way too many hours to get working) 
 
 TODO:
 
-2. Make the servo move as intended from the input from the joystick on the ESP32.(Testing purposes)
-3. Write/find a library for the NRF24L01 transceiver. (almost done, only receiver part left)
-3.1 Test that the SPI transmitting part to the LRF24L01 is working properly
+SKIP: 2. Make the servo move as intended from the input from the joystick on the ESP32.(Testing purposes)
+
+
+3.2 Test that the SPI transmitting part to the LRF24L01 is working properly
 4. Test that I can send a message from TX to RX MCUs using the NRF24L01 transceiver.
 5. Properly send joystick input from TX to RX using NRF24L01 transceiver, RX then move a servo as intended.
 6. From the ESP32 test ESC and make it work with the motor.

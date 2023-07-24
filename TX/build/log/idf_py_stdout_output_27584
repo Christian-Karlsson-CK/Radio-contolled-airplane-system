@@ -1,0 +1,35 @@
+[1/10] Performing build step for 'bootloader'
+[1/1] cmd.exe /C "cd /D "C:\Users\Christian Karlsson\C\Programmering embedded\Radio-controlled-airplane-system\TX\build\bootloader\esp-idf\esptool_py" && C:\Espressif\python_env\idf5.0_py3.11_env\Scripts\python.exe C:/Espressif/frameworks/esp-idf-v5.0.2/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 "C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/build/bootloader/bootloader.bin""
+Bootloader binary size 0x66f0 bytes. 0x910 bytes (8%) free.
+[2/8] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/LRF24L01.c.obj
+C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/main/LRF24L01.c: In function 'NRF24_ReadReg':
+C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/main/LRF24L01.c:199:12: warning: returning 'uint8_t *' {aka 'unsigned char *'} from a function with return type 'uint8_t' {aka 'unsigned char'} makes integer from pointer without a cast [-Wint-conversion]
+  199 |     return data;
+      |            ^~~~
+C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/main/LRF24L01.c: In function 'NRF24_Init':
+C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/main/LRF24L01.c:268:13: warning: variable 'config' set but not used [-Wunused-but-set-variable]
+  268 |     uint8_t config = NRF24_ReadReg(CONFIG, spi_device_handle);//TESTING
+      |             ^~~~~~
+C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/main/LRF24L01.c:264:15: warning: unused variable 'ret' [-Wunused-variable]
+  264 |     esp_err_t ret; //TESTING
+      |               ^~~
+[3/8] Linking C static library esp-idf\main\libmain.a
+[4/8] Generating ld/sections.ld
+[5/8] Linking CXX executable RX.elf
+[6/8] Generating binary image from built executable
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 2 ELF sections
+Successfully created esp32 image.
+Generated C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/build/RX.bin
+[7/8] cmd.exe /C "cd /D "C:\Users\Christian Karlsson\C\Programmering embedded\Radio-controlled-airplane-system\TX\build\esp-idf\esptool_py" && C:\Espressif\python_env\idf5.0_py3.11_env\Scripts\python.exe C:/Espressif/frameworks/esp-idf-v5.0.2/components/partition_table/check_sizes.py --offset 0x8000 partition --type app "C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/build/partition_table/partition-table.bin" "C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/build/RX.bin""
+RX.bin binary size 0x33d00 bytes. Smallest app partition is 0x100000 bytes. 0xcc300 bytes (80%) free.
+[7/8] cmd.exe /C "cd /D C:\Espressif\frameworks\esp-idf-v5.0.2\components\esptool_py && C:\Espressif\tools\cmake\3.24.0\bin\cmake.exe -D IDF_PATH=C:/Espressif/frameworks/esp-idf-v5.0.2 -D SERIAL_TOOL=C:/Espressif/python_env/idf5.0_py3.11_env/Scripts/python.exe;;C:/Espressif/frameworks/esp-idf-v5.0.2/components/esptool_py/esptool/esptool.py;--chip;esp32 -D SERIAL_TOOL_ARGS=--before=default_reset;--after=hard_reset;write_flash;@flash_args -D "WORKING_DIRECTORY=C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/build" -P C:/Espressif/frameworks/esp-idf-v5.0.2/components/esptool_py/run_serial_tool.cmake"
+esptool esp32 -p COM3 -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 bootloader/bootloader.bin 0x10000 RX.bin 0x8000 partition_table/partition-table.bin
+esptool.py v4.5.1
+Serial port COM3
+
+A fatal error occurred: Could not open COM3, the port doesn't exist
+FAILED: CMakeFiles/flash C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/build/CMakeFiles/flash 
+cmd.exe /C "cd /D C:\Espressif\frameworks\esp-idf-v5.0.2\components\esptool_py && C:\Espressif\tools\cmake\3.24.0\bin\cmake.exe -D IDF_PATH=C:/Espressif/frameworks/esp-idf-v5.0.2 -D SERIAL_TOOL=C:/Espressif/python_env/idf5.0_py3.11_env/Scripts/python.exe;;C:/Espressif/frameworks/esp-idf-v5.0.2/components/esptool_py/esptool/esptool.py;--chip;esp32 -D SERIAL_TOOL_ARGS=--before=default_reset;--after=hard_reset;write_flash;@flash_args -D "WORKING_DIRECTORY=C:/Users/Christian Karlsson/C/Programmering embedded/Radio-controlled-airplane-system/TX/build" -P C:/Espressif/frameworks/esp-idf-v5.0.2/components/esptool_py/run_serial_tool.cmake"
+ninja: build stopped: subcommand failed.

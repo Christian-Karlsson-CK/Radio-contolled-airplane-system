@@ -5,8 +5,8 @@
 
 
 
-
-void SPI_init(spi_device_handle_t*);
+//Common
+void SPI_init(spi_device_handle_t *spi_handle);
 
 void CS_Select();
 void CS_Unselect();
@@ -23,9 +23,14 @@ void nrfsendCmd (uint8_t, spi_device_handle_t*);
 
 void NRF24_Init(spi_device_handle_t*);
 
+//RX
 void NRF24_TXMode(uint8_t*, uint8_t, spi_device_handle_t*);
 uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t* spi_handle);
 
+//RX
+void NRF24_RXMode(uint8_t *Address, uint8_t channel, spi_device_handle_t *spi_device_handle);
+uint8_t NRF24_RXisDataReady(int pipeNum ,spi_device_handle_t *spi_device_handle);
+void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle);
 
 
 //void NRF24_Init (void);
