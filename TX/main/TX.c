@@ -12,7 +12,7 @@ idf.py build
 idf.py monitor -p COM3
 	få in händelser direkt från MCUn
 
-idf.py flash -p COM3 monitor
+
     builda & flasha till MCU, monitor är optional om man vill övervaka.
 
 
@@ -66,13 +66,15 @@ void app_main(void)
 
     SPI_init(&spi_device_handle);
 
-    uint8_t TxAddress[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA};
-    uint8_t TxData[] = "Hello World\n";
+    uint8_t TxAddress[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA}; //40bits
+    uint8_t TxData[] = "Hello World, this is 32 bytes!!";
 
     NRF24_Init(&spi_device_handle);
 
-    //NRF24_TXMode(TxAddress, 10, &spi_device_handle);
+    NRF24_TXMode(TxAddress, 10, &spi_device_handle);
 
+    int ret = NRF24_Transmit(TxData, &spi_device_handle);
+    ESP_LOGI(TAG, "return from trnsmit method is: %d:", ret); //TESTING
 
     while (true)
     {   

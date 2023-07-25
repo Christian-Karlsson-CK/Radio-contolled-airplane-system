@@ -1,6 +1,9 @@
 
 //https://www.youtube.com/watch?v=mB7LsiscM78&list=PLfIJKC1ud8giTKW0nzHN71hud_238d-JO&index=10
 
+#include <string.h>
+#include <stdio.h>
+
 #include "LRF24L01.h"
 //#include "hal/spi_types.h"
 #include "driver/spi_common.h"
@@ -10,7 +13,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include <stdio.h>
 
 
 //NRF24L01 PINS
@@ -39,11 +41,8 @@ void SPI_init(spi_device_handle_t *spi_device_handle){
     gpio_set_level(PIN_NUM_CS, 1);
     gpio_set_direction(PIN_NUM_CE, GPIO_MODE_OUTPUT);
     gpio_set_level(PIN_NUM_CE, 0);
-    //vTaskDelay(pdMS_TO_TICKS(10));
     
     esp_err_t ret; //Used to represent error codes returned by various functions and operations
-
-    
 
     spi_bus_config_t buscfg={
         .miso_io_num = PIN_NUM_MISO,
@@ -110,6 +109,8 @@ void CE_Disable(){
 
 void nrf24_WriteRegister(uint8_t reg, uint8_t data, spi_device_handle_t *spi_device_handle){//This method is used to write to a specific register, the NRF24L01 has registers to configure different settings for the NRF24L01.
 
+    CE_Disable();
+
     esp_err_t ret;
     uint8_t buffer[2];
     buffer[0] = reg|1<<5; //In datasheet w_register says fifth bit needs to be a 1.
@@ -132,21 +133,22 @@ void nrf24_WriteRegister(uint8_t reg, uint8_t data, spi_device_handle_t *spi_dev
     ESP_LOGI(TAG, "WRITE DATA buffer[1]: %d", buffer[1]); //TESTING
 
     CS_Unselect();
+    CE_Enable();
 }
 
 void nrf24_WriteRegisterMulti(uint8_t reg, uint8_t *data, spi_device_handle_t *spi_device_handle, int numberofBytes){//This method is used to write to s specific register, the NRF24L01 has registers to configure different settings for the NRF24L01.
-
-    uint8_t buffer = reg|1<<5;
-
     
-    
-    // Write to NRF24L01 register
-    //uint8_t registerAddress = 0x10;
-    //uint8_t data = 0xAB;
+    CE_Disable();
 
+    esp_err_t ret;
+    uint8_t buffer[1+numberofBytes];
+    buffer[0] = reg|1<<5;
+    memcpy(&buffer[1], data, numberofBytes);
+
+    /*
     spi_transaction_t trans[2] = {
         {
-        .length = 16,  // Length in bits
+        .length = 8,  // Length in bits
         .tx_buffer = &buffer,
         .rx_buffer = NULL,
         .user = NULL,
@@ -157,17 +159,30 @@ void nrf24_WriteRegisterMulti(uint8_t reg, uint8_t *data, spi_device_handle_t *s
         .rx_buffer = NULL,
         .user = NULL,
         }
+    };*/
+
+    spi_transaction_t trans = {
+        .length = 8 + 8 * numberofBytes,  // Length in bits
+        .tx_buffer = &buffer,
+        .rx_buffer = NULL,
+        .user = NULL,
     };
 
-    //CS_Select();
+    CS_Select();
 
-    spi_device_transmit(*spi_device_handle, &trans[0]);
+    ret = spi_device_transmit(*spi_device_handle, &trans);
+    ESP_LOGI(TAG, "WriteRegisterMulti:"); //TESTING
+    ESP_LOGI(TAG, "spi_device_transmit: %d", ret); //TESTING
 
-    //CS_Unselect();
+    CS_Unselect();
+
+    CE_Enable();
 }
 
 
 uint8_t NRF24_ReadReg(uint8_t reg, spi_device_handle_t *spi_device_handle){
+
+    CE_Disable();
 
     uint8_t data[1];
     data[0] = 0;
@@ -195,50 +210,67 @@ uint8_t NRF24_ReadReg(uint8_t reg, spi_device_handle_t *spi_device_handle){
     ESP_LOGI(TAG, "data[1]  AFTER: %u", data[1]); //TESTING
 
     CS_Unselect();
+    CE_Enable();
 
-    return data;
+    return data[1];
 }
 
 void ReadRegMulti(uint8_t reg, uint8_t *data, int numberofBytes, spi_device_handle_t *spi_device_handle){
+    CE_Disable();
 
+    /* Not working!
     spi_transaction_t trans[2] = {
         {
-        .length = 8,  // Length in bits of reg
-        .tx_buffer = &reg,
-        .rx_buffer = NULL,
-        .user = NULL,
+            .length = 8,  // Length in bits of reg
+            .tx_buffer = &reg,
+            .rx_buffer = NULL,
+            .user = NULL,
         },
         {
-        .rxlength = 8 * numberofBytes,  // Length in bits of data
-        .tx_buffer = NULL,
-        .rx_buffer = data,
-        .user = NULL,
+            .length = 8 * numberofBytes,  // Length in bits of data
+            .tx_buffer = NULL,
+            .rx_buffer = data,
+            .user = NULL,
         }
-    };
+    };*/
 
-    /* Alternative transaction
+    // Alternative transaction
     spi_transaction_t trans = {
         .length = 8 + 8 *numberofBytes,  // Length in bits of register then length of data bits
-        .tx_buffer = &reg,
-        .rx_buffer = data,
-        .user = NULL,
+        .tx_buffer = &reg,               // the length is probably the total length in bits of either send or receive way.
+        .rx_buffer = data,               // we have the STATUS reg (8 bits) that ALWAYS gets sent first no matter the command given.   
+        .user = NULL,                    // then we have the bytes we want to read.
     };
-    */
+    
 
 
     CS_Select();
 
-    esp_err_t ret = spi_device_transmit(*spi_device_handle, &trans[0]);
+    esp_err_t ret = spi_device_transmit(*spi_device_handle, &trans);
     ESP_ERROR_CHECK(ret);
 
 
+    ESP_LOGI(TAG, "ReadMulti:"); //TESTING
+    ESP_LOGI(TAG, "spi_device_transmit: %d", ret); //TESTING
+    ESP_LOGI(TAG, "WRITE REG:            %u", reg); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[0]: %u", data[0]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[1]: %u", data[1]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[2]: %u", data[2]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[3]: %u", data[3]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[4]: %u", data[4]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[5]: %d", data[5]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[6]: %d", data[6]); //TESTING
+
     CS_Unselect();
+    CE_Enable();
 
     //return data;
 }
 
 void nrfsendCmd (uint8_t cmd, spi_device_handle_t *spi_device_handle)
 {   
+    CE_Disable();
+
     spi_transaction_t trans = {
         .length = 8,  // Length in bits
         .tx_buffer = &cmd,
@@ -254,6 +286,7 @@ void nrfsendCmd (uint8_t cmd, spi_device_handle_t *spi_device_handle)
 
 	// Pull the CS HIGH to release the device
 	CS_Unselect();
+    CE_Enable();
 }
 
 
@@ -261,47 +294,23 @@ void NRF24_Init(spi_device_handle_t *spi_device_handle){
 
     CE_Disable();
 
-    esp_err_t ret; //TESTING
+    nrf24_WriteRegister(CONFIG, 0, spi_device_handle); //Will be configured later.
 
-
-    
-    uint8_t config = NRF24_ReadReg(CONFIG, spi_device_handle);//TESTING
-
-    //vTaskDelay(pdMS_TO_TICKS(100));
-    nrf24_WriteRegister(CONFIG, 1, spi_device_handle); //Will be configured later.
-    vTaskDelay(pdMS_TO_TICKS(100));
-
-    config = NRF24_ReadReg(CONFIG, spi_device_handle);//TESTING
-    //ESP_LOGI(TAG, "CONFIG AFTER: %u", config); //TESTING
 
     nrf24_WriteRegister(EN_AA, 0, spi_device_handle); //No auto-Acknowledgment
-    //vTaskDelay(pdMS_TO_TICKS(100));
 
 
     nrf24_WriteRegister(EN_RXADDR, 0, spi_device_handle); //Will be configured later.
-    vTaskDelay(pdMS_TO_TICKS(100));
-
-    config = NRF24_ReadReg(SETUP_AW, spi_device_handle);//TESTING
-
 
     nrf24_WriteRegister(SETUP_AW, 0x03, spi_device_handle);
-    vTaskDelay(pdMS_TO_TICKS(100));
-
-    config = NRF24_ReadReg(SETUP_AW, spi_device_handle);//TESTING
-    //ESP_LOGI(TAG, "SETUP_AW AFTER: %u...", config); //TESTING
 
     nrf24_WriteRegister(SETUP_RETR, 0, spi_device_handle); //Retransimssion disabled
-    vTaskDelay(pdMS_TO_TICKS(100));
 
     nrf24_WriteRegister(RF_CH, 0, spi_device_handle);
 
     nrf24_WriteRegister(RF_SETUP, 0x0E, spi_device_handle); //Power = 0dbm,  data rate = 2mbps
-    vTaskDelay(pdMS_TO_TICKS(100));
 
-    config = NRF24_ReadReg(CONFIG, spi_device_handle);//TESTING
-    config = NRF24_ReadReg(RF_SETUP, spi_device_handle);//TESTING
-
-    //CE_Enable();
+    CE_Enable();
 }
 
 
@@ -316,48 +325,78 @@ void NRF24_TXMode(uint8_t *Address, uint8_t channel, spi_device_handle_t *spi_de
 
     nrf24_WriteRegisterMulti(TX_ADDR, Address, spi_device_handle, 5); // Write the TX address
 
+    uint8_t regValue = NRF24_ReadReg(TX_ADDR, spi_device_handle);
+
+    //TESTING:
+    uint8_t data[7];
+    data[0] = 0;
+    data[1] = 1;
+    data[2] = 2;
+    data[3] = 3;
+    data[4] = 4;
+    data[5] = 5;
+    data[6] = 6;
+
+    ESP_LOGI(TAG, "WRITE DATA buffer[0]: %u", data[0]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[1]: %u", data[1]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[2]: %u", data[2]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[3]: %u", data[3]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[4]: %u", data[4]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[5]: %d", data[5]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[6]: %d", data[6]); //TESTING
+
+    ReadRegMulti(TX_ADDR, &data, 5, spi_device_handle);
+
+    ESP_LOGI(TAG, "WRITE DATA buffer[0]: %u", data[0]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[1]: %u", data[1]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[2]: %u", data[2]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[3]: %u", data[3]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[4]: %u", data[4]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[5]: %d", data[5]); //TESTING
+    ESP_LOGI(TAG, "WRITE DATA buffer[6]: %d", data[6]); //TESTING
+
     //Power up the NRF24L01
     uint8_t config = NRF24_ReadReg(CONFIG, spi_device_handle); //Read the current settings.
     config = config | (1<<1);  //If not already a 1, change first bit to 1. That position will make the device power up.
     nrf24_WriteRegister(CONFIG, config, spi_device_handle); //The write it back
     //Doing it this way will prevent other bits from changing.
 
+
+    config = NRF24_ReadReg(CONFIG, spi_device_handle); //TESTING
     CE_Enable();
 }
 
 uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t *spi_device_handle){
-    CS_Select();
 
     uint8_t cmdToSend = W_TX_PAYLOAD; //this command tells the LRF24L01 that following this a payload will be sent.
 
-    spi_transaction_t trans[2] = {
-        {
-        .length = 8,  // Length in bits of command
-        .tx_buffer = &cmdToSend, //Command to send
+    uint8_t buffer[33];
+    memcpy(&buffer[1], payload, 32);
+
+    spi_transaction_t trans = {
+        .length = 8*33,  // Length in bits of command cmd is 1byte the payload is 32 byte
+        .tx_buffer = &buffer, //Command to send
         .rx_buffer = NULL,
         .user = NULL,
-        },
-        {
-        .length = 8 * 32,  // Length in bits of payload we have set the payload length to 32 bytes(i think)
-        .tx_buffer = payload,
-        .rx_buffer = NULL,
-        .user = NULL,
-        }
     };
 
     CS_Select();
 
-	esp_err_t ret = spi_device_transmit(*spi_device_handle, &trans[0]);
+	esp_err_t ret = spi_device_transmit(*spi_device_handle, &trans);
     ESP_ERROR_CHECK(ret);
+    ESP_LOGI(TAG, "Transmit:"); //TESTING
+    ESP_LOGI(TAG, "spi_device_transmit: %d", ret); //TESTING
 
     CS_Unselect();
 
     vTaskDelay(pdMS_TO_TICKS(1)); //Delay for the pin to settle
 
+    ESP_LOGI(TAG, "READ FIFO STATUS:"); //TESTING
     uint8_t fifoStatus = NRF24_ReadReg(FIFO_STATUS, spi_device_handle); //Read fifo status to see if LRF24L01 properly received transmission.
                                                                         //FIFO = first-in-first-out    
     
     if((fifoStatus & (1<<4)) && (!(fifoStatus & (1<<3)))){
+        ESP_LOGI(TAG, "inside if block:"); //TESTING
         cmdToSend = FLUSH_TX;
         nrfsendCmd(cmdToSend, spi_device_handle);
         return 1;
