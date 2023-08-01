@@ -11,6 +11,7 @@
 #include "UnoR3Pins.h"
 
 #include "lcd.h"
+#include <util/delay.h>
 
 //#include "driver/spi_common.h"
 //#include "driver/gpio.h"
@@ -121,6 +122,17 @@ void nrf24_WriteRegisterMulti(uint8_t reg, uint8_t *data, int numberofBytes){//T
 
     CS_Select();
 
+    SPDR = reg;//select starting registry
+    while(!(SPSR & (1<<SPIF)));
+
+    //Send all the data bytes
+    for (int i = 0; i < numberofBytes; i++)
+    {
+        SPDR = *data;
+        while(!(SPSR & (1<<SPIF)));
+        data++;
+    }
+    
     CS_Unselect();
 
     CE_Enable();
@@ -141,18 +153,17 @@ uint8_t NRF24_ReadReg(const uint8_t reg){
 
     // Read the FIFO_STATUS
     response[0] = SPDR;
-    lcd_printf("STATUS = %u", response[0]);
-    uint8_t dummy = 0xFF;
+    //lcd_printf("STATUS = %u", response[0]);
 
-    SPDR = dummy;
+    SPDR = 0xFF; //Dummy bits that wont do anything. Just to trigger the NRF so it will send the registry data.
 
     while(!(SPSR & (1<<SPIF)));
     //loop_until_bit_is_set(SPSR, SPIF);
 
     response[1] = SPDR;
 
-    lcd_set_cursor(0,1);
-    lcd_printf("REGISTRY = %u", response[1]);
+    //lcd_set_cursor(0,1);
+    //lcd_printf("REGISTRY = %u", response[1]);
     CS_Unselect();
     CE_Enable();
 
@@ -164,6 +175,20 @@ void ReadRegMulti(uint8_t reg, uint8_t *data, int numberofBytes){
 
 
     CS_Select();
+
+    SPDR = reg;//select starting registry
+    while(!(SPSR & (1<<SPIF)));
+
+    for (int i = 0; i < numberofBytes; i++)
+    {
+        SPDR = 0xFF;
+        
+        while(!(SPSR & (1<<SPIF)));
+
+        *data = SPDR;
+
+        data++;
+    }
 
     CS_Unselect();
     CE_Enable();
@@ -187,27 +212,24 @@ void NRF24_Init(){
 
     CE_Disable();
 
-    nrf24_WriteRegister(CONFIG, 1); //Will be configured later.
+    nrf24_WriteRegister(CONFIG, 0); //Will be configured later.
 
     uint8_t regValue = NRF24_ReadReg(CONFIG);
 
-    lcd_set_cursor(0,1);
-    lcd_printf("REGISTRY = %u", regValue);
-    
+    //lcd_set_cursor(0,1);
+    //lcd_printf("REGISTRY = %u", regValue);
 
-    //lcd_printf("CONFIG = %u", regValue);
+    nrf24_WriteRegister(EN_AA, 0); //No auto-Acknowledgment
 
-    //nrf24_WriteRegister(EN_AA, 0); //No auto-Acknowledgment
+    nrf24_WriteRegister(EN_RXADDR, 0); //Will be configured later.
 
-    //nrf24_WriteRegister(EN_RXADDR, 0); //Will be configured later.
+    nrf24_WriteRegister(SETUP_AW, 0x03);
 
-    //nrf24_WriteRegister(SETUP_AW, 0x03);
+    nrf24_WriteRegister(SETUP_RETR, 0); //Retransimssion disabled
 
-    //nrf24_WriteRegister(SETUP_RETR, 0); //Retransimssion disabled
+    nrf24_WriteRegister(RF_CH, 0);
 
-    //nrf24_WriteRegister(RF_CH, 0);
-
-    //nrf24_WriteRegister(RF_SETUP, 0x0E); //Power = 0dbm,  data rate = 2mbps
+    nrf24_WriteRegister(RF_SETUP, 0x0E); //Power = 0dbm,  data rate = 2mbps
 
     CE_Enable();
 }
@@ -286,12 +308,13 @@ void NRF24_RXMode(uint8_t *Address, uint8_t channel){ //put the NRF24L01 in TXMo
     nrf24_WriteRegister(RF_CH, channel); //Choose a channel
 
     uint8_t readDataPipesReg = NRF24_ReadReg(EN_RXADDR);
+
     readDataPipesReg = readDataPipesReg | (1<<1);
     nrf24_WriteRegister(EN_RXADDR, readDataPipesReg); //Choose a dataPipe while making sure no other bits will change
 
     nrf24_WriteRegister(RX_PW_P1, 32); //datapipe 1 will have 32 bytes of data for each received transmit.
 
-    nrf24_WriteRegisterMulti(TX_ADDR, Address, 5); // Write the RX address
+    nrf24_WriteRegisterMulti(TX_ADDR, Address, 5); // Write the RX address 
 
     //Power up the NRF24L01 and set to RX mode
     uint8_t config = NRF24_ReadReg(CONFIG); //Read the current settings.

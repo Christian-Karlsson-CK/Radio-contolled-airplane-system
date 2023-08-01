@@ -32,6 +32,9 @@ int main()
     double horz;
     double vert;
 
+    uint8_t RxAddress[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA}; //40bits
+    uint8_t RxData[32];
+
     //init_servo();
     //init_serial();
     millis_init();
@@ -46,18 +49,10 @@ int main()
     _delay_ms(100);				// Power on reset 100ms
     
     NRF24_Init();
-    //NRF24_RXMode(RxAddress, 10, &spi_device_handle);
+    NRF24_RXMode(RxAddress, 10);
 
     //BIT_SET(DDRB, ON_BOARD_LED); //Sätt led_pin_red till output mode
     //BIT_SET(DDRD, SERVO_1); //Servo
-
-    uint8_t RxAddress[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA};
-    uint8_t RxData[32];
-
-    //lcd_puts("Skriv in koden:");
-    //lcd_printf("Rx %u", RxAddress[0]);
-
-
 
     while (1) {
         /*
