@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include <util/setbaud.h>
+#include <util/delay.h>
 
 void uart_init(void) 
 {

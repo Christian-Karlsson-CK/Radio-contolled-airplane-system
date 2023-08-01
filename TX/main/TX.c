@@ -29,7 +29,7 @@ idf.py monitor -p COM3
 #include "driver/spi_common.h"
 #include "driver/spi_master.h"
 
-#include "LRF24L01.h"
+#include "NRF24L01.h"
 
 //NRF24L01 PINS
 #define SPIHOST HSPI_HOST //Using VSPI on ESP32 SPIHOST = The SPI controller peripheral inside ESP32. VSPI_HOST = SPI3_HOST=2

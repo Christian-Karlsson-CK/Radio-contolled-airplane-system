@@ -25,15 +25,17 @@ The list will be separated into 2 sections. A DONE section and a TODO section.
 
 DONE:
 1. Make the joystick work and get its analog input into the ESP32.(Testing purposes)
-3. Write/find a library for the NRF24L01 transceiver.
-3.1 Test that registers is properly read and written to. (This took way too many hours to get working) 
+3. Write/find a library for the NRF24L01 transceiver for ESP32.
+3.1 Test that registers is properly read and written to.(ESP32) (This took way too many hours to get working) 
+3.2 Test that the SPI transmitting part to the LRF24L01 is working properly (ESP32)
+
+3.4 Test that i can read/write to registers for an AVR MCU.
 
 TODO:
 
-SKIP: 2. Make the servo move as intended from the input from the joystick on the ESP32.(Testing purposes)
+3.3 Rewrite the library to work with a AVR MCU.
 
-
-3.2 Test that the SPI transmitting part to the LRF24L01 is working properly
+3.5 Test that the SPI transmitting part to the LRF24L01 is working properly for the AVR MCU
 4. Test that I can send a message from TX to RX MCUs using the NRF24L01 transceiver.
 5. Properly send joystick input from TX to RX using NRF24L01 transceiver, RX then move a servo as intended.
 6. From the ESP32 test ESC and make it work with the motor.
@@ -47,3 +49,7 @@ If the joystick y axis is pulled to the top reading 4095, x axis also reads 4095
 
 If the joystick x axis is pulled to the right reading 4095, y axis also reads 4095?? Should be ~2650.SOLVED: joystick voltage should not be 5V but use the 3.3v instead as the ADC can no tread up to 5V.
 
+Learnings:
+Clock frequenzy on the SPI communication needs to be set to the same value for both the Atmega328p and ESP32.
+
+A big problem that I did not know about is that the NRF24L01 will always send back the FIFO_STATUS register first on every new command from the SPI transmitted to it. When the FIFO_STATUS is empty and it will be return a decimal value of 14. It took many hours to find out this.

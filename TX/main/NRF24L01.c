@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "LRF24L01.h"
+#include "NRF24L01.h"
 //#include "hal/spi_types.h"
 #include "driver/spi_common.h"
 #include "driver/gpio.h"
