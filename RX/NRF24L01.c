@@ -71,24 +71,22 @@ void CS_Unselect(){
     BIT_SET(PORTB, PIN_NUM_CS);
 }
 
-void CE_Enable(){
+/*void CE_Enable(){
     BIT_SET(DDRB, PIN_NUM_CE);
 }
 
 void CE_Disable(){
     BIT_CLEAR(DDRB, PIN_NUM_CE);
+}*/
+
+void CE_Enable(){
+    BIT_CLEAR(DDRB, PIN_NUM_CE);
 }
 
-uint8_t SPI_SendByte(uint8_t data) {
-    // Load data into the SPI data register
-    SPDR = data;
-
-    // Wait for the transmission to complete
-    while (!(SPSR & (1 << SPIF)));
-
-    // Return the received data from the SPI data register (optional)
-    return SPDR;
+void CE_Disable(){
+    BIT_SET(DDRB, PIN_NUM_CE);
 }
+
 
 void nrf24_WriteRegister(uint8_t reg, uint8_t data){//This method is used to write to a specific register, the NRF24L01 has registers to configure different settings for the NRF24L01.
 
@@ -309,7 +307,7 @@ void NRF24_RXMode(uint8_t *Address, uint8_t channel){ //put the NRF24L01 in TXMo
 
     CE_Disable();
 
-    nrf24_WriteRegister(STATUS, 0x00);
+    //nrf24_WriteRegister(STATUS, 0x00);
 
     nrf24_WriteRegister(RF_CH, channel); //choose a channel
     //uint8_t rfch = NRF24_ReadReg(RF_CH);
@@ -369,14 +367,14 @@ uint8_t NRF24_RXisDataReady(int pipeNum){
 
     //Check if bit number 6 is 1 and that bit 1-3 matches pipeNum.
     if((statusReg & (1<<6))){//if((statusReg & (1<<6)) && (statusReg & (pipeNum<<1))){
-        nrf24_WriteRegister(STATUS, (1<<6)); // va 1<<4 innan 
-        lcd_set_cursor(11,0);
-        lcd_printf("Recei");
+        //nrf24_WriteRegister(STATUS, (1<<6));
+        lcd_set_cursor(12,0);
+        lcd_printf("Rece");
         _delay_ms(1000);
         return 1;
     }
-    lcd_set_cursor(11,0);
-    lcd_printf("Nothi");
+    lcd_set_cursor(12,0);
+    lcd_printf("Noth");
     //nrf24_WriteRegister(STATUS, (1<<4));
     //nrfsendCmd(FLUSH_RX);
     //_delay_ms(1000);
@@ -407,9 +405,11 @@ void NRF24_Receive(uint8_t *dataStorage){
 
     _delay_ms(1); //Delay for the pin to settle
     
-
+    //nrf24_WriteRegister(STATUS, (1<<6));//TEST
     cmdToSend = FLUSH_RX;
     nrfsendCmd(cmdToSend);
+
+    nrf24_WriteRegister(STATUS, (1<<6));
 }
 
 

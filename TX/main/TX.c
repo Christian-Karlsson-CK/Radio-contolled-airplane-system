@@ -92,7 +92,7 @@ void app_main(void)
         //reg = NRF24_ReadReg(FIFO_STATUS, spi_device_handle);
         //ESP_LOGI(TAG, "FIFO_STATUS: %u", reg);
 
-        vTaskDelay(pdMS_TO_TICKS(99));
+        vTaskDelay(pdMS_TO_TICKS(3000));
         //vTaskDelay(100);
     }
     

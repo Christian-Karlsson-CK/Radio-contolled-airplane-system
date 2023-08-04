@@ -51,8 +51,8 @@ int main()
     NRF24_Init();
     NRF24_RXMode(RxAddress, 55);
 
-    nrf24_WriteRegister(STATUS, 0);
-    nrf24_WriteRegister(FIFO_STATUS, 0);
+    //nrf24_WriteRegister(STATUS, 0);
+    //nrf24_WriteRegister(FIFO_STATUS, 0);
     //nrfsendCmd(FLUSH_RX);
     //if (STATUS == 78)
     //{
@@ -66,7 +66,7 @@ int main()
 
     while (1) {
 
-        
+        CE_Enable();
 
         uint8_t reg = NRF24_ReadReg(STATUS);
         lcd_set_cursor(0,0);
@@ -90,24 +90,47 @@ int main()
             lcd_printf("M:");
 
             NRF24_Receive(RxData);
-            for (size_t i = 0; i < 32; i++)
+            for (size_t i = 0; i < 30; i++)
             {
-            lcd_set_cursor(i+2,1);
-            lcd_printf("%c", RxData[i]);
+                lcd_set_cursor(i+2,1);
+                lcd_printf("%c", RxData[i]);
             
-            //lcd_set_cursor(0,1);
-            //lcd_printf("%c", RxData[i+1]);
+                //lcd_set_cursor(0,1);
+                //lcd_printf("%c", RxData[i+1]);
             
             }
-            _delay_ms(10000);
+            //_delay_ms(10000);
+            reg = NRF24_ReadReg(STATUS);
+            lcd_set_cursor(0,0);
+            lcd_printf("S%u", reg);
+
+            reg = NRF24_ReadReg(FIFO_STATUS);
+            lcd_set_cursor(4,0);
+            lcd_printf("F%u", reg);
+
+            reg = NRF24_ReadReg(RPD);
+            lcd_set_cursor(8,0);
+            lcd_printf("R%u", reg);
+
+            _delay_ms(2000);
+            
         }
         else{
             lcd_set_cursor(2,1);
             lcd_printf("NO MESSAGE");
-            //_delay_ms(3000);
+            //_delay_ms(100);
+            CE_Disable();
+            //lcd_set_cursor(2,1);
+            //lcd_printf("Disabled");
+            _delay_ms(2000);
+
+            CE_Enable();
+            //lcd_set_cursor(2,1);
+            //lcd_printf("Enabled");
+            _delay_ms(20);
+            
         }
 
-        
         
          
 
