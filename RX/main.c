@@ -51,7 +51,7 @@ int main()
     NRF24_Init();
     NRF24_RXMode(RxAddress, 55);
 
-    //nrf24_WriteRegister(STATUS, 0);
+    nrf24_WriteRegister(STATUS, 0);
     nrf24_WriteRegister(FIFO_STATUS, 0);
     //nrfsendCmd(FLUSH_RX);
     //if (STATUS == 78)
@@ -75,17 +75,20 @@ int main()
         reg = NRF24_ReadReg(FIFO_STATUS);
         lcd_set_cursor(4,0);
         lcd_printf("F%u", reg);
-        _delay_ms(1000);
+        //_delay_ms(1000);
 
         reg = NRF24_ReadReg(RPD);
         lcd_set_cursor(8,0);
         lcd_printf("R%u", reg);
 
+        //64 16 1 first loop 64=New data received and bit 3:1 is all 0 meaning datapipe 0, 16=data in RX fifo. 1 = RPD
+        //78 17 1 from second loop i believe 78 = 64bit still set(RX_DR),bit 3:1 is 111 meaning RX fifo empty. 1 = RPD
 
         if (NRF24_RXisDataReady(0) == 1)
         {   
             lcd_set_cursor(0,1);
             lcd_printf("M:");
+
             NRF24_Receive(RxData);
             for (size_t i = 0; i < 32; i++)
             {
@@ -98,8 +101,13 @@ int main()
             }
             _delay_ms(10000);
         }
+        else{
+            lcd_set_cursor(2,1);
+            lcd_printf("NO MESSAGE");
+            //_delay_ms(3000);
+        }
 
-        _delay_ms(1000);
+        
         
          
 

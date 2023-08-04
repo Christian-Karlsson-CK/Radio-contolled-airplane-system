@@ -367,14 +367,9 @@ uint8_t NRF24_RXisDataReady(int pipeNum){
 
     uint8_t statusReg = NRF24_ReadReg(STATUS);
 
-    //lcd_set_cursor(1,0);
-    //lcd_printf("STATUS: %u", statusReg);
-
-    
-
     //Check if bit number 6 is 1 and that bit 1-3 matches pipeNum.
     if((statusReg & (1<<6))){//if((statusReg & (1<<6)) && (statusReg & (pipeNum<<1))){
-        nrf24_WriteRegister(STATUS, (1<<4));
+        nrf24_WriteRegister(STATUS, (1<<6)); // va 1<<4 innan 
         lcd_set_cursor(11,0);
         lcd_printf("Recei");
         _delay_ms(1000);
@@ -384,14 +379,14 @@ uint8_t NRF24_RXisDataReady(int pipeNum){
     lcd_printf("Nothi");
     //nrf24_WriteRegister(STATUS, (1<<4));
     //nrfsendCmd(FLUSH_RX);
-    _delay_ms(1000);
+    //_delay_ms(1000);
     return 0;
 }
 
 
 void NRF24_Receive(uint8_t *dataStorage){
 
-    uint8_t cmdToSend = R_RX_PAYLOAD; //Read payload, payload will then be deleted in LRF24 automagicaly
+    uint8_t cmdToSend = R_RX_PAYLOAD; //Read payload, payload will probably then be deleted in LRF24 automagicaly
 
     CS_Select();
 
