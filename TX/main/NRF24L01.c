@@ -368,10 +368,22 @@ void NRF24_TXMode(uint8_t *Address, uint8_t channel, spi_device_handle_t *spi_de
 uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t *spi_device_handle){
     CE_Enable();
     uint8_t cmdToSend = W_TX_PAYLOAD; //this command tells the LRF24L01 that following this a payload will be sent.
-
+    
     uint8_t buffer[33];
-    buffer[0] = cmdToSend;
     memcpy(&buffer[1], payload, 32);
+    buffer[0] = cmdToSend;
+    //for (size_t i = 1; i < 32; i++)
+    //{
+    //    buffer[i] = payload[i];
+    //}
+    
+
+    //memcpy(&buffer[0], &cmdToSend, 1);
+    //memcpy(&buffer[1], payload, 32);
+    //strncpy((char*)&buffer[1], payload, 32);
+    ESP_LOGI(TAG, "%s", buffer); //TESTING*/
+    //buffer[0] = cmdToSend;
+    
 
     spi_transaction_t trans = {
         .length = 8*33,  // Length in bits of command cmd is 1byte the payload is 32 byte
@@ -386,6 +398,8 @@ uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t *spi_device_handle)
     ESP_ERROR_CHECK(ret);
     //ESP_LOGI(TAG, "Transmit:"); //TESTING
     ESP_LOGI(TAG, "spi_device_transmit: %d", ret); //TESTING*/
+    ESP_LOGI(TAG, "%s", buffer); //TESTING*/
+    
 
 /*
         spi_transaction_t trans = {

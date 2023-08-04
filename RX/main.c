@@ -66,9 +66,9 @@ int main()
 
     while (1) {
 
-        CE_Enable();
+        //CE_Enable();
 
-        uint8_t reg = NRF24_ReadReg(STATUS);
+        /*uint8_t reg = NRF24_ReadReg(STATUS);
         lcd_set_cursor(0,0);
         lcd_printf("S%u", reg);
 
@@ -80,27 +80,30 @@ int main()
         reg = NRF24_ReadReg(RPD);
         lcd_set_cursor(8,0);
         lcd_printf("R%u", reg);
-
+        _delay_ms(100);*/
         //64 16 1 first loop 64=New data received and bit 3:1 is all 0 meaning datapipe 0, 16=data in RX fifo. 1 = RPD
         //78 17 1 from second loop i believe 78 = 64bit still set(RX_DR),bit 3:1 is 111 meaning RX fifo empty. 1 = RPD
 
         if (NRF24_RXisDataReady(0) == 1)
         {   
-            lcd_set_cursor(0,1);
-            lcd_printf("M:");
+            //lcd_set_cursor(0,1);
+            //lcd_printf("M:");
 
             NRF24_Receive(RxData);
-            for (size_t i = 0; i < 30; i++)
+            for (size_t i = 0; i < 16; i++)
             {
-                lcd_set_cursor(i+2,1);
+                lcd_set_cursor(i,0);
                 lcd_printf("%c", RxData[i]);
-            
+
+                lcd_set_cursor(i,1);
+                lcd_printf("%c", RxData[i+16]);
+                //_delay_ms(1000);
                 //lcd_set_cursor(0,1);
                 //lcd_printf("%c", RxData[i+1]);
             
             }
             //_delay_ms(10000);
-            reg = NRF24_ReadReg(STATUS);
+            /*reg = NRF24_ReadReg(STATUS);
             lcd_set_cursor(0,0);
             lcd_printf("S%u", reg);
 
@@ -112,22 +115,22 @@ int main()
             lcd_set_cursor(8,0);
             lcd_printf("R%u", reg);
 
-            _delay_ms(2000);
+            _delay_ms(100);*/
             
         }
         else{
             lcd_set_cursor(2,1);
             lcd_printf("NO MESSAGE");
-            //_delay_ms(100);
-            CE_Disable();
+            _delay_ms(1000);
+            //CE_Disable();
             //lcd_set_cursor(2,1);
             //lcd_printf("Disabled");
-            _delay_ms(2000);
+            //_delay_ms(2000);
 
-            CE_Enable();
+            //CE_Enable();
             //lcd_set_cursor(2,1);
             //lcd_printf("Enabled");
-            _delay_ms(20);
+            //_delay_ms(2000);
             
         }
 

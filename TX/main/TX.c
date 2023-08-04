@@ -67,7 +67,7 @@ void app_main(void)
     SPI_init(&spi_device_handle);
 
     uint8_t TxAddress[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA}; //40bits
-    uint8_t TxData[] = "Hello World, this is 32 bytes!!";
+    uint8_t TxData[] = "--Hello World, this is 32 bytes";
 
     NRF24_Init(&spi_device_handle);
 
@@ -92,7 +92,7 @@ void app_main(void)
         //reg = NRF24_ReadReg(FIFO_STATUS, spi_device_handle);
         //ESP_LOGI(TAG, "FIFO_STATUS: %u", reg);
 
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(50));
         //vTaskDelay(100);
     }
     

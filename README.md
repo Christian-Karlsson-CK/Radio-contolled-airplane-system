@@ -32,10 +32,10 @@ DONE:
 3.4 Test that i can read/write to registers for an AVR MCU.
 3.5 Test that the SPI transmitting part to the LRF24L01 is working properly for the AVR MCU.
 4. Test that I can send a message from TX to RX MCUs using the NRF24L01 transceiver.
+4.1 Message received sometimes on startup. Try to make it work everytime and as expected.
 
 TODO:
 
-4.1 Message received sometimes on startup. Try to make it work everytime and as expected.
 5. Properly send joystick input from TX to RX using NRF24L01 transceiver, RX then move a servo as intended.
 6. From the ESP32 test ESC and make it work with the motor.
 7. Send joystick input from TX to RX for ESC control.

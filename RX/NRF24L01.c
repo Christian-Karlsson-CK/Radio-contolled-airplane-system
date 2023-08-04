@@ -71,26 +71,26 @@ void CS_Unselect(){
     BIT_SET(PORTB, PIN_NUM_CS);
 }
 
-/*void CE_Enable(){
-    BIT_SET(DDRB, PIN_NUM_CE);
-}
-
-void CE_Disable(){
-    BIT_CLEAR(DDRB, PIN_NUM_CE);
-}*/
-
 void CE_Enable(){
+    BIT_SET(PORTB, PIN_NUM_CE);
+}
+
+void CE_Disable(){
+    BIT_CLEAR(PORTB, PIN_NUM_CE);
+}
+
+/*void CE_Enable(){
     BIT_CLEAR(DDRB, PIN_NUM_CE);
 }
 
 void CE_Disable(){
     BIT_SET(DDRB, PIN_NUM_CE);
-}
+}*/
 
 
 void nrf24_WriteRegister(uint8_t reg, uint8_t data){//This method is used to write to a specific register, the NRF24L01 has registers to configure different settings for the NRF24L01.
 
-    CE_Disable();
+    //CE_Disable();
 
     reg = reg|1<<5; //In datasheet w_register says fifth bit needs to be a 1.
     CS_Select();
@@ -109,12 +109,12 @@ void nrf24_WriteRegister(uint8_t reg, uint8_t data){//This method is used to wri
     //loop_until_bit_is_set(SPSR, SPIF);
 
     CS_Unselect();
-    CE_Enable();
+    //CE_Enable();
 }
 
 void nrf24_WriteRegisterMulti(uint8_t reg, uint8_t *data, int numberofBytes){//This method is used to write to s specific register, the NRF24L01 has registers to configure different settings for the NRF24L01.
     
-    CE_Disable();
+    //CE_Disable();
 
     reg = reg|1<<5;
 
@@ -133,13 +133,13 @@ void nrf24_WriteRegisterMulti(uint8_t reg, uint8_t *data, int numberofBytes){//T
     
     CS_Unselect();
 
-    CE_Enable();
+    //CE_Enable();
 }
 
 
 uint8_t NRF24_ReadReg(const uint8_t reg){
 
-    CE_Disable();
+    //CE_Disable();
     CS_Select();
 
     uint8_t response[2] = { 0 };
@@ -164,13 +164,13 @@ uint8_t NRF24_ReadReg(const uint8_t reg){
     //lcd_set_cursor(0,1);
     //lcd_printf("REGISTRY = %u", response[1]);
     CS_Unselect();
-    CE_Enable();
+    //CE_Enable();
 
     return SPDR; //After reg has been sent to the NRF24, NRF24 will send the reg status
 }
 
 void ReadRegMulti(uint8_t reg, uint8_t *data, int numberofBytes){
-    CE_Disable();
+    //CE_Disable();
 
 
     CS_Select();
@@ -190,13 +190,13 @@ void ReadRegMulti(uint8_t reg, uint8_t *data, int numberofBytes){
     }
 
     CS_Unselect();
-    CE_Enable();
+    //CE_Enable();
 
 }
 
 void nrfsendCmd (uint8_t cmd)
 {   
-    CE_Disable();
+    //CE_Disable();
 
 	// Pull the CS Pin LOW to select the device
 	CS_Select();
@@ -206,13 +206,13 @@ void nrfsendCmd (uint8_t cmd)
 
 	// Pull the CS HIGH to release the device
 	CS_Unselect();
-    CE_Enable();
+    //CE_Enable();
 }
 
 
 void NRF24_Init(){
 
-    CE_Disable();
+    //CE_Disable();
 
     nrf24_WriteRegister(CONFIG, 0); //Will be configured later.
 
@@ -233,7 +233,7 @@ void NRF24_Init(){
 
     nrf24_WriteRegister(RF_SETUP, 0x0E); //Power = 0dbm,  data rate = 2mbps
 
-    CE_Enable();
+    //CE_Enable();
 }
 
 
@@ -242,7 +242,7 @@ void NRF24_Init(){
 
 void NRF24_TXMode(uint8_t *Address, uint8_t channel){ //put the NRF24L01 in TXMode
 
-    CE_Disable();
+    //CE_Disable();
 
     nrf24_WriteRegister(RF_CH, channel); //Choose a channel
 
@@ -272,7 +272,7 @@ void NRF24_TXMode(uint8_t *Address, uint8_t channel){ //put the NRF24L01 in TXMo
 
 
     config = NRF24_ReadReg(CONFIG); //TESTING
-    CE_Enable();
+    //CE_Enable();
 }
 
 uint8_t NRF24_Transmit(uint8_t *payload){
@@ -305,7 +305,7 @@ uint8_t NRF24_Transmit(uint8_t *payload){
 
 void NRF24_RXMode(uint8_t *Address, uint8_t channel){ //put the NRF24L01 in TXMode
 
-    CE_Disable();
+    //CE_Disable();
 
     //nrf24_WriteRegister(STATUS, 0x00);
 
@@ -359,6 +359,8 @@ void NRF24_RXMode(uint8_t *Address, uint8_t channel){ //put the NRF24L01 in TXMo
     _delay_ms(20);
 
     CE_Enable();
+    //CE_Disable();
+    _delay_ms(30);
 }
 
 uint8_t NRF24_RXisDataReady(int pipeNum){
@@ -368,9 +370,9 @@ uint8_t NRF24_RXisDataReady(int pipeNum){
     //Check if bit number 6 is 1 and that bit 1-3 matches pipeNum.
     if((statusReg & (1<<6))){//if((statusReg & (1<<6)) && (statusReg & (pipeNum<<1))){
         //nrf24_WriteRegister(STATUS, (1<<6));
-        lcd_set_cursor(12,0);
-        lcd_printf("Rece");
-        _delay_ms(1000);
+        //lcd_set_cursor(12,0);
+        //lcd_printf("Rece");
+        //_delay_ms(1000);
         return 1;
     }
     lcd_set_cursor(12,0);
@@ -409,7 +411,7 @@ void NRF24_Receive(uint8_t *dataStorage){
     cmdToSend = FLUSH_RX;
     nrfsendCmd(cmdToSend);
 
-    nrf24_WriteRegister(STATUS, (1<<6));
+    //nrf24_WriteRegister(STATUS, (1<<6));
 }
 
 
