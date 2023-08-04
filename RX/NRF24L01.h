@@ -12,7 +12,7 @@ void CE_Disable();
 void nrf24_WriteRegister(uint8_t register, uint8_t registerData);
 void nrf24_WriteRegisterMulti(uint8_t startRegister, uint8_t* registerData, int);
 
-uint8_t ReadReg(uint8_t register);
+uint8_t NRF24_ReadReg(uint8_t register);
 void ReadRegMulti(uint8_t startRegister, uint8_t* registerData, int registerDataSize);
 
 void nrfsendCmd (uint8_t cmd);
@@ -50,7 +50,7 @@ void NRF24_Receive(uint8_t *dataStorage);
 #define RF_SETUP    0x06
 #define STATUS      0x07
 #define OBSERVE_TX  0x08
-#define CD          0x09
+#define RPD         0x09
 #define RX_ADDR_P0  0x0A
 #define RX_ADDR_P1  0x0B
 #define RX_ADDR_P2  0x0C

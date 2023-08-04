@@ -12,7 +12,7 @@ idf.py build
 idf.py monitor -p COM3
 	få in händelser direkt från MCUn
 
-
+idf.py flash -p COM3 monitor
     builda & flasha till MCU, monitor är optional om man vill övervaka.
 
 
@@ -71,28 +71,28 @@ void app_main(void)
 
     NRF24_Init(&spi_device_handle);
 
-    NRF24_TXMode(TxAddress, 10, &spi_device_handle);
-
-    int ret = NRF24_Transmit(TxData, &spi_device_handle);
-    ESP_LOGI(TAG, "return from trnsmit method is: %d:", ret); //TESTING
+    NRF24_TXMode(TxAddress, 55, &spi_device_handle);
 
     while (true)
     {   
         
-        int xReading = adc1_get_raw(ADC1_CHANNEL_0);
-        int yReading = adc1_get_raw(ADC1_CHANNEL_3);
+        //int xReading = adc1_get_raw(ADC1_CHANNEL_0);
+        //int yReading = adc1_get_raw(ADC1_CHANNEL_3);
 
 
 
-        ESP_LOGI(TAG, "Y: %d, X:%d", yReading, xReading);
+        //ESP_LOGI(TAG, "Y: %d, X:%d", yReading, xReading);
 
-        //if(NRF24_Transmit(TxData, &spi_device_handle)){
-        //    ESP_LOGI(TAG, "Transmitted data is received! Woohoo");
-        //}
+        if(NRF24_Transmit(TxData, &spi_device_handle)){
+            ESP_LOGI(TAG, "SEEMS TO TRANSMIT");
+        }
+        nrf24_WriteRegister(STATUS, 32, &spi_device_handle);
+        uint8_t reg = NRF24_ReadReg(STATUS, &spi_device_handle);
+        ESP_LOGI(TAG, "STATUS RESET: %u", reg);
+        //reg = NRF24_ReadReg(FIFO_STATUS, spi_device_handle);
+        //ESP_LOGI(TAG, "FIFO_STATUS: %u", reg);
 
-        //ESP_LOGI(TAG, "Y: %d, X:%d");
-
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(3000));
         //vTaskDelay(100);
     }
     

@@ -59,7 +59,7 @@ void SPI_init(){
     SPR0 = 1, SPR1 = 0: fck/64 (SPI clock frequency is the system clock divided by 64)
     SPR0 = 1, SPR1 = 1: fck/128 (SPI clock frequency is the system clock divided by 128)
 */
-    //SPSR |= _BV(SPI2X);
+    //SPSR |= _BV(SPI2X); //Double SPI Clock speed
 
 }
 
@@ -153,6 +153,7 @@ uint8_t NRF24_ReadReg(const uint8_t reg){
 
     // Read the FIFO_STATUS
     response[0] = SPDR;
+    //lcd_set_cursor(0,1);
     //lcd_printf("STATUS = %u", response[0]);
 
     SPDR = 0xFF; //Dummy bits that wont do anything. Just to trigger the NRF so it will send the registry data.
@@ -201,6 +202,9 @@ void nrfsendCmd (uint8_t cmd)
 
 	// Pull the CS Pin LOW to select the device
 	CS_Select();
+
+    SPDR = cmd;
+    while(!(SPSR & (1<<SPIF)));
 
 	// Pull the CS HIGH to release the device
 	CS_Unselect();
@@ -305,35 +309,82 @@ void NRF24_RXMode(uint8_t *Address, uint8_t channel){ //put the NRF24L01 in TXMo
 
     CE_Disable();
 
-    nrf24_WriteRegister(RF_CH, channel); //Choose a channel
+    nrf24_WriteRegister(STATUS, 0x00);
 
-    uint8_t readDataPipesReg = NRF24_ReadReg(EN_RXADDR);
+    nrf24_WriteRegister(RF_CH, channel); //choose a channel
+    //uint8_t rfch = NRF24_ReadReg(RF_CH);
+    //lcd_set_cursor(0,0);
+    //lcd_printf("rfch: %u", rfch);
+    
+    nrf24_WriteRegister(EN_RXADDR, 1);
 
-    readDataPipesReg = readDataPipesReg | (1<<1);
-    nrf24_WriteRegister(EN_RXADDR, readDataPipesReg); //Choose a dataPipe while making sure no other bits will change
+    //uint8_t readreg = NRF24_ReadReg(EN_RXADDR);
 
-    nrf24_WriteRegister(RX_PW_P1, 32); //datapipe 1 will have 32 bytes of data for each received transmit.
+    nrf24_WriteRegisterMulti(RX_ADDR_P0, Address, 5); // Write the RX address
 
-    nrf24_WriteRegisterMulti(TX_ADDR, Address, 5); // Write the RX address 
+    nrf24_WriteRegister(RX_PW_P0, 32); /// 32 bit payload size for pipe 0
+
+
+
+    /* We must write the address for Data Pipe 1, if we want to use any pipe from 2 to 5
+	 * The Address from DATA Pipe 2 to Data Pipe 5 differs only in the LSB
+	 * Their 4 MSB Bytes will still be same as Data Pipe 1
+	 *
+	 * For Eg->
+	 * Pipe 1 ADDR = 0xAABBCCDD11
+	 * Pipe 2 ADDR = 0xAABBCCDD22
+	 * Pipe 3 ADDR = 0xAABBCCDD33
+	 *
+	 */
+
+     /*
+    // select data pipe 2
+	uint8_t en_rxaddr = NRF24_ReadReg(EN_RXADDR);
+	en_rxaddr = en_rxaddr | (1<<2);
+	nrf24_WriteRegister (EN_RXADDR, en_rxaddr);
+    
+    nrf24_WriteRegisterMulti(RX_ADDR_P1, Address, 5);  // Write the Pipe1 address
+	nrf24_WriteRegister(RX_ADDR_P2, 0xEE);  // Write the Pipe2 LSB address
+
+	nrf24_WriteRegister (RX_PW_P2, 32);   // 32 bit payload size for pipe 2
+    */
+    
+
+    
 
     //Power up the NRF24L01 and set to RX mode
     uint8_t config = NRF24_ReadReg(CONFIG); //Read the current settings.
     config = config | (1<<1) | (1<<0);  //If not already a 1, change first bit to 1. That position will make the device power up.
+    //config = 3;//TEST
     nrf24_WriteRegister(CONFIG, config); //Then write it back
     //Doing it this way will prevent other bits from changing.
+    _delay_ms(20);
 
     CE_Enable();
 }
 
 uint8_t NRF24_RXisDataReady(int pipeNum){
+
     uint8_t statusReg = NRF24_ReadReg(STATUS);
 
-    //Check if bit number 6 is 1 and that bit 1-3 matches pipeNum.
-    if((statusReg & (1<<6)) && (statusReg & (pipeNum<<1))){
-        nrf24_WriteRegister(STATUS, (1<<6));
+    //lcd_set_cursor(1,0);
+    //lcd_printf("STATUS: %u", statusReg);
 
+    
+
+    //Check if bit number 6 is 1 and that bit 1-3 matches pipeNum.
+    if((statusReg & (1<<6))){//if((statusReg & (1<<6)) && (statusReg & (pipeNum<<1))){
+        nrf24_WriteRegister(STATUS, (1<<4));
+        lcd_set_cursor(11,0);
+        lcd_printf("Recei");
+        _delay_ms(1000);
         return 1;
     }
+    lcd_set_cursor(11,0);
+    lcd_printf("Nothi");
+    //nrf24_WriteRegister(STATUS, (1<<4));
+    //nrfsendCmd(FLUSH_RX);
+    _delay_ms(1000);
     return 0;
 }
 
@@ -344,9 +395,23 @@ void NRF24_Receive(uint8_t *dataStorage){
 
     CS_Select();
 
+    SPDR = cmdToSend;
+    while(!(SPSR & (1<<SPIF)));
+
+    for (int i = 0; i < 32; i++)
+    {
+        SPDR = 0xFF;
+        while(!(SPSR & (1<<SPIF)));
+
+        *dataStorage = SPDR;
+
+        dataStorage++;
+    }
+
     CS_Unselect();
 
-    //vTaskDelay(pdMS_TO_TICKS(1)); //Delay for the pin to settle
+    _delay_ms(1); //Delay for the pin to settle
+    
 
     cmdToSend = FLUSH_RX;
     nrfsendCmd(cmdToSend);

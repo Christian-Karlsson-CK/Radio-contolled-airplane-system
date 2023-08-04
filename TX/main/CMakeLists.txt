@@ -1,2 +1,2 @@
-idf_component_register(SRCS "TX.c" "LRF24L01.c"
+idf_component_register(SRCS "NRF24L01.c" "TX.c"
                     INCLUDE_DIRS ".")

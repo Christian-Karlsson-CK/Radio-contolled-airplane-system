@@ -49,18 +49,58 @@ int main()
     _delay_ms(100);				// Power on reset 100ms
     
     NRF24_Init();
-    NRF24_RXMode(RxAddress, 10);
+    NRF24_RXMode(RxAddress, 55);
+
+    //nrf24_WriteRegister(STATUS, 0);
+    nrf24_WriteRegister(FIFO_STATUS, 0);
+    //nrfsendCmd(FLUSH_RX);
+    //if (STATUS == 78)
+    //{
+    //    nrfsendCmd(FLUSH_RX);
+    //    nrf24_WriteRegister(STATUS, 0);
+    //}
+    
 
     //BIT_SET(DDRB, ON_BOARD_LED); //Sätt led_pin_red till output mode
     //BIT_SET(DDRD, SERVO_1); //Servo
 
     while (1) {
-        /*
-        if (NRF24_RXisDataReady(1) == 1)
-        {
-           NRF24_Receive(RxAddress, );
+
+        
+
+        uint8_t reg = NRF24_ReadReg(STATUS);
+        lcd_set_cursor(0,0);
+        lcd_printf("S%u", reg);
+
+        reg = NRF24_ReadReg(FIFO_STATUS);
+        lcd_set_cursor(4,0);
+        lcd_printf("F%u", reg);
+        _delay_ms(1000);
+
+        reg = NRF24_ReadReg(RPD);
+        lcd_set_cursor(8,0);
+        lcd_printf("R%u", reg);
+
+
+        if (NRF24_RXisDataReady(0) == 1)
+        {   
+            lcd_set_cursor(0,1);
+            lcd_printf("M:");
+            NRF24_Receive(RxData);
+            for (size_t i = 0; i < 32; i++)
+            {
+            lcd_set_cursor(i+2,1);
+            lcd_printf("%c", RxData[i]);
+            
+            //lcd_set_cursor(0,1);
+            //lcd_printf("%c", RxData[i+1]);
+            
+            }
+            _delay_ms(10000);
         }
-        */
+
+        _delay_ms(1000);
+        
          
 
         //ConvertToPercentage(&horz);

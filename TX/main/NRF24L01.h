@@ -16,15 +16,15 @@ void CE_Disable();
 void nrf24_WriteRegister(uint8_t, uint8_t, spi_device_handle_t*);
 void nrf24_WriteRegisterMulti(uint8_t, uint8_t*, spi_device_handle_t*, int);
 
-uint8_t ReadReg(uint8_t, spi_device_handle_t*);
+uint8_t NRF24_ReadReg(uint8_t reg, spi_device_handle_t *spi_device_handle);
 void ReadRegMulti(uint8_t, uint8_t*, int, spi_device_handle_t*);
 
 void nrfsendCmd (uint8_t, spi_device_handle_t*);
 
 void NRF24_Init(spi_device_handle_t*);
 
-//RX
-void NRF24_TXMode(uint8_t*, uint8_t, spi_device_handle_t*);
+//TX
+void NRF24_TXMode(uint8_t *Address, uint8_t channel, spi_device_handle_t *spi_device_handle);
 uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t* spi_handle);
 
 //RX
@@ -80,6 +80,7 @@ void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle)
 #define R_RX_PL_WID   0x60
 #define R_RX_PAYLOAD  0x61
 #define W_TX_PAYLOAD  0xA0
+#define W_TX_PAYLOAD_NOACK	0b10110000
 #define W_ACK_PAYLOAD 0xA8
 #define FLUSH_TX      0xE1
 #define FLUSH_RX      0xE2

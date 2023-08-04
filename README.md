@@ -28,15 +28,14 @@ DONE:
 3. Write/find a library for the NRF24L01 transceiver for ESP32.
 3.1 Test that registers is properly read and written to.(ESP32) (This took way too many hours to get working) 
 3.2 Test that the SPI transmitting part to the LRF24L01 is working properly (ESP32)
-
+3.3 Rewrite the library to work with a AVR MCU.
 3.4 Test that i can read/write to registers for an AVR MCU.
+3.5 Test that the SPI transmitting part to the LRF24L01 is working properly for the AVR MCU.
+4. Test that I can send a message from TX to RX MCUs using the NRF24L01 transceiver.
 
 TODO:
 
-3.3 Rewrite the library to work with a AVR MCU.
-
-3.5 Test that the SPI transmitting part to the LRF24L01 is working properly for the AVR MCU
-4. Test that I can send a message from TX to RX MCUs using the NRF24L01 transceiver.
+4.1 Message received sometimes on startup. Try to make it work everytime and as expected.
 5. Properly send joystick input from TX to RX using NRF24L01 transceiver, RX then move a servo as intended.
 6. From the ESP32 test ESC and make it work with the motor.
 7. Send joystick input from TX to RX for ESC control.
@@ -45,9 +44,10 @@ TODO:
 10. (OPTIONAL) GPS functionality.
 
 PROBLEMS:
-If the joystick y axis is pulled to the top reading 4095, x axis also reads 4095?? Should be ~2650. SOLVED: joystick voltage should not be 5V but use the 3.3v instead as the ADC can no tread up to 5V.
 
-If the joystick x axis is pulled to the right reading 4095, y axis also reads 4095?? Should be ~2650.SOLVED: joystick voltage should not be 5V but use the 3.3v instead as the ADC can no tread up to 5V.
+If the joystick y axis is pulled to the top reading 4095, x axis also reads 4095?? Should be ~2650. SOLVED: joystick voltage should not be 5V but use the 3.3v instead as the ADC can not read up to 5V.
+
+If the joystick x axis is pulled to the right reading 4095, y axis also reads 4095?? Should be ~2650.SOLVED: joystick voltage should not be 5V but use the 3.3v instead as the ADC can not read up to 5V.
 
 Learnings:
 Clock frequenzy on the SPI communication needs to be set to the same value for both the Atmega328p and ESP32.
