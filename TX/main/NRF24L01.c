@@ -381,7 +381,7 @@ uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t *spi_device_handle)
     //memcpy(&buffer[0], &cmdToSend, 1);
     //memcpy(&buffer[1], payload, 32);
     //strncpy((char*)&buffer[1], payload, 32);
-    ESP_LOGI(TAG, "%s", buffer); //TESTING*/
+    //ESP_LOGI(TAG, "Y %u, X %u", buffer[2], buffer[3]); //TESTING*/
     //buffer[0] = cmdToSend;
     
 
@@ -397,8 +397,8 @@ uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t *spi_device_handle)
 	esp_err_t ret = spi_device_transmit(*spi_device_handle, &trans);
     ESP_ERROR_CHECK(ret);
     //ESP_LOGI(TAG, "Transmit:"); //TESTING
-    ESP_LOGI(TAG, "spi_device_transmit: %d", ret); //TESTING*/
-    ESP_LOGI(TAG, "%s", buffer); //TESTING*/
+    //ESP_LOGI(TAG, "spi_device_transmit: %d", ret); //TESTING*/
+    //ESP_LOGI(TAG, "%s", buffer); //TESTING*/
     
 
 /*
@@ -426,29 +426,29 @@ uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t *spi_device_handle)
     vTaskDelay(pdMS_TO_TICKS(20));
 
     uint8_t fifoStatus = NRF24_ReadReg(FIFO_STATUS, spi_device_handle);
-    ESP_LOGI(TAG, "FIFO STATUS BEFORE RESET: %u", fifoStatus); //TESTING
+    //ESP_LOGI(TAG, "FIFO STATUS BEFORE RESET: %u", fifoStatus); //TESTING
     CS_Unselect();
 
     vTaskDelay(pdMS_TO_TICKS(1)); //Delay for the pin to settle
 
-    ESP_LOGI(TAG, "READ FIFO STATUS AFTER TRANSMIT:"); //TESTING
+    //ESP_LOGI(TAG, "READ FIFO STATUS AFTER TRANSMIT:"); //TESTING
     fifoStatus = NRF24_ReadReg(FIFO_STATUS, spi_device_handle); //Read fifo status to see if LRF24L01 properly received transmission.
                                                                         //FIFO = first-in-first-out    
-    fifoStatus = NRF24_ReadReg(FIFO_STATUS, spi_device_handle);
-    ESP_LOGI(TAG, "FIFO STATUS BEFORE RESET: %u", fifoStatus); //TESTING
+    //fifoStatus = NRF24_ReadReg(FIFO_STATUS, spi_device_handle);
+    //ESP_LOGI(TAG, "FIFO STATUS BEFORE RESET: %u", fifoStatus); //TESTING
     if((fifoStatus & (1<<4)) && (!(fifoStatus & (1<<3)))){
-        ESP_LOGI(TAG, "FIFO STATUS READ OK:"); //TESTING
+        //ESP_LOGI(TAG, "FIFO STATUS READ OK:"); //TESTING
         cmdToSend = FLUSH_TX;
         nrfsendCmd(cmdToSend, spi_device_handle);
 
         // reset FIFO_STATUS
 		nrf24_WriteRegister(FIFO_STATUS, 0x00, spi_device_handle);
 
-        fifoStatus = NRF24_ReadReg(FIFO_STATUS, spi_device_handle);
-        ESP_LOGI(TAG, "FIFO STATUS RESET(MUST BE 17): %u", fifoStatus); //TESTING
+        //fifoStatus = NRF24_ReadReg(FIFO_STATUS, spi_device_handle);
+        //ESP_LOGI(TAG, "FIFO STATUS RESET(MUST BE 17): %u", fifoStatus); //TESTING
 
-        fifoStatus = NRF24_ReadReg(STATUS, spi_device_handle);
-        ESP_LOGI(TAG, "STATUS: %u", fifoStatus); //TESTING
+        //fifoStatus = NRF24_ReadReg(STATUS, spi_device_handle);
+        //ESP_LOGI(TAG, "STATUS: %u", fifoStatus); //TESTING
 
         return 1;
     }

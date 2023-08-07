@@ -375,8 +375,8 @@ uint8_t NRF24_RXisDataReady(int pipeNum){
         //_delay_ms(1000);
         return 1;
     }
-    lcd_set_cursor(12,0);
-    lcd_printf("Noth");
+    //lcd_set_cursor(12,0);
+    //lcd_printf("Noth");
     //nrf24_WriteRegister(STATUS, (1<<4));
     //nrfsendCmd(FLUSH_RX);
     //_delay_ms(1000);

@@ -20,9 +20,12 @@
 
 #define ON_BOARD_LED 5
 
-#define SERVO_1 4
+#define SERVO_1 3
+
+#define BATTERY_MONITOR_PIN 4
 
 void ConvertToPercentage(double*);
+uint16_t read_analog_pin(uint8_t pin);
 
 int main()
 {   
@@ -35,7 +38,7 @@ int main()
     uint8_t RxAddress[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA}; //40bits
     uint8_t RxData[32];
 
-    //init_servo();
+    init_servo();
     //init_serial();
     millis_init();
     sei();
@@ -51,22 +54,9 @@ int main()
     NRF24_Init();
     NRF24_RXMode(RxAddress, 55);
 
-    //nrf24_WriteRegister(STATUS, 0);
-    //nrf24_WriteRegister(FIFO_STATUS, 0);
-    //nrfsendCmd(FLUSH_RX);
-    //if (STATUS == 78)
-    //{
-    //    nrfsendCmd(FLUSH_RX);
-    //    nrf24_WriteRegister(STATUS, 0);
-    //}
+    BIT_CLEAR(DDRC, BATTERY_MONITOR_PIN);
     
-
-    //BIT_SET(DDRB, ON_BOARD_LED); //Sätt led_pin_red till output mode
-    //BIT_SET(DDRD, SERVO_1); //Servo
-
     while (1) {
-
-        //CE_Enable();
 
         /*uint8_t reg = NRF24_ReadReg(STATUS);
         lcd_set_cursor(0,0);
@@ -84,78 +74,70 @@ int main()
         //64 16 1 first loop 64=New data received and bit 3:1 is all 0 meaning datapipe 0, 16=data in RX fifo. 1 = RPD
         //78 17 1 from second loop i believe 78 = 64bit still set(RX_DR),bit 3:1 is 111 meaning RX fifo empty. 1 = RPD
 
+        //Battery monitor:
+        int read = analogRead(BATTERY_MONITOR_PIN);
+        float voltage = (analogRead(BATTERY_MONITOR_PIN) / 1023.0) * 4.7 * 3;
+        float voltage2 = (200 / 1023.0) * 4.7 * 3;
+        
+        int whole = voltage;
+        int decimal = (voltage - whole) * 100;
+
+        lcd_set_cursor(0,0);
+        lcd_printf("%02d.%.02d", whole, decimal);
+
+        //lcd_set_cursor(7,0);
+        //lcd_printf("Volts");
+        _delay_ms(200);
+        lcd_clear();
+
         if (NRF24_RXisDataReady(0) == 1)
         {   
-            //lcd_set_cursor(0,1);
-            //lcd_printf("M:");
-
             NRF24_Receive(RxData);
-            for (size_t i = 0; i < 16; i++)
-            {
-                lcd_set_cursor(i,0);
-                lcd_printf("%c", RxData[i]);
-
-                lcd_set_cursor(i,1);
-                lcd_printf("%c", RxData[i+16]);
-                //_delay_ms(1000);
-                //lcd_set_cursor(0,1);
-                //lcd_printf("%c", RxData[i+1]);
+            _delay_ms(10);
             
-            }
-            //_delay_ms(10000);
-            /*reg = NRF24_ReadReg(STATUS);
-            lcd_set_cursor(0,0);
-            lcd_printf("S%u", reg);
+            uint16_t receivedValueX = (uint16_t)((RxData[3] << 8) | RxData[2]);
+            uint16_t receivedValueY = (uint16_t)((RxData[5] << 8) | RxData[4]);
 
-            reg = NRF24_ReadReg(FIFO_STATUS);
-            lcd_set_cursor(4,0);
-            lcd_printf("F%u", reg);
+            double percentX = receivedValueX;
+            double percentY = receivedValueY;
+            ConvertToPercentage(&percentX);
+            ConvertToPercentage(&percentY);
 
-            reg = NRF24_ReadReg(RPD);
-            lcd_set_cursor(8,0);
-            lcd_printf("R%u", reg);
+            
+            lcd_set_cursor(0,1);
+            lcd_printf("%u", receivedValueX);
+            lcd_set_cursor(7,1);
+            lcd_printf("%u", receivedValueY);
 
-            _delay_ms(100);*/
+            servo1_set_percentage(percentX);
+
+            _delay_ms(10);
             
         }
         else{
             lcd_set_cursor(2,1);
             lcd_printf("NO MESSAGE");
             _delay_ms(1000);
-            //CE_Disable();
-            //lcd_set_cursor(2,1);
-            //lcd_printf("Disabled");
-            //_delay_ms(2000);
-
-            //CE_Enable();
-            //lcd_set_cursor(2,1);
-            //lcd_printf("Enabled");
-            //_delay_ms(2000);
             
-        }
-
-        
-         
-
-        //ConvertToPercentage(&horz);
-
-        //servo1_set_percentage(horz);
+        }       
   	}
     return 0;
 }
 
-void ConvertToPercentage(double *reading){
+void ConvertToPercentage(double *reading){ //Works with values from 0-1023.
     *reading -= 512;
     *reading /= 512;
     *reading *= 100;
 }
 
+uint16_t read_analog_pin(uint8_t pin) {
+    ADMUX = (ADMUX & 0xF0) | (pin & 0x0F); // Select the ADC channel, ADC channel have same number as the analog pin.
 
-/*void WaitForStartButtonClick(){
-    while (1){ //Wait for start condition: Joystick button press.
-        if (BUTTON_IS_CLICKED(PIND,SEL_PIN))
-            break;
-    }
-    _delay_ms(100);
-}*/
+    ADCSRA |= (1 << ADSC); // Start conversion
+    while (ADCSRA & (1 << ADSC)); // Wait for the conversion to complete
+
+    return ADC; // Return the ADC result (a 10-bit value)
+}
+
+
 

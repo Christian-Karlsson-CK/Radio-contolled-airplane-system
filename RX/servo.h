@@ -12,11 +12,11 @@
 // The settings below are for the Mega, modify
 // in case you want to use other pins
 #define PORT_1	PORTD
-#define PIN_1	PD5
+#define PIN_1	PD3
 #define DDR_1	DDRD
  
 #define PORT_2	PORTD
-#define PIN_2	PD6
+#define PIN_2	PD2
 #define DDR_2	DDRD
  
 void init_servo(void);
