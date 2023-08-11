@@ -35,11 +35,11 @@ DONE:
 4.1 Message received sometimes on startup. Try to make it work everytime and as expected.
 5. Properly send joystick input from TX to RX using NRF24L01 transceiver, RX then move a servo as intended.
 5.1 Create a voltage divider with resistors so that i can read battery voltage into the AVR MCU. Battery = 3cell LIPO ~9.9V = Empty, ~12.8V = full.
+5.2 Send data from AVR to ESP32 with battery voltage.
 
 TODO:
 
 
-5.2 Send data from AVR to ESP32 with battery voltage.
 5.3 Display voltage on LCD screen.
 6. From the ESP32 test ESC and make it work with the motor.
 7. Send joystick input from TX to RX for ESC control.

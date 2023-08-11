@@ -17,14 +17,14 @@ void ReadRegMulti(uint8_t startRegister, uint8_t* registerData, int registerData
 
 void nrfsendCmd (uint8_t cmd);
 
-void NRF24_Init();
+void NRF24_Init(uint8_t *TX_Address,uint8_t *RX_Address, uint8_t channel);
 
 //RX
-void NRF24_TXMode(uint8_t* address, uint8_t channel);
-uint8_t NRF24_Transmit(uint8_t *payload);
+void NRF24_TXMode();
+uint8_t NRF24_Transmit(uint8_t *payload, int numberofBytes);
 
 //RX
-void NRF24_RXMode(uint8_t *Address, uint8_t channel);
+void NRF24_RXMode();
 uint8_t NRF24_RXisDataReady(int pipeNum);
 void NRF24_Receive(uint8_t *dataStorage);
 
@@ -82,6 +82,18 @@ void NRF24_Receive(uint8_t *dataStorage);
 #define REUSE_TX_PL   0xE3
 #define NOP           0xFF
 
+/*Config register*/
+#define PRIM_RX       0x00
+#define PWR_UP        0x01
+
+/*Status register*/
+#define RX_P_NO       0x01 
+#define MAX_RT        0x04
+#define TX_DS         0x05
+#define RX_DR         0x06
+
+/*Fifo status*/
+#define TX_EMPTY      0x04
 
 #endif /* _NRF24L01_H_ */
 

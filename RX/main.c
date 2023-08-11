@@ -38,6 +38,9 @@ int main()
     uint8_t RxAddress[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA}; //40bits
     uint8_t RxData[32];
 
+    uint8_t TxAddress[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE};
+    uint8_t TxData[32];
+
     init_servo();
     //init_serial();
     millis_init();
@@ -49,51 +52,63 @@ int main()
     
 
     SPI_init();
-    _delay_ms(100);				// Power on reset 100ms
     
-    NRF24_Init();
-    NRF24_RXMode(RxAddress, 55);
-
+    NRF24_Init(TxAddress, RxAddress, 55);
+    //NRF24_RXMode();
+    NRF24_TXMode();
+                                            //PWR UP/PWRDOWN DELAY 2MS
+                                            //TX MODE = CE HIGH FOR 10 MICROSECONDS
+                                            //CE positive edge to csn low 4microseconds
     BIT_CLEAR(DDRC, BATTERY_MONITOR_PIN);
     
     while (1) {
-
-        /*uint8_t reg = NRF24_ReadReg(STATUS);
-        lcd_set_cursor(0,0);
-        lcd_printf("S%u", reg);
-
-        reg = NRF24_ReadReg(FIFO_STATUS);
-        lcd_set_cursor(4,0);
-        lcd_printf("F%u", reg);
-        //_delay_ms(1000);
-
-        reg = NRF24_ReadReg(RPD);
-        lcd_set_cursor(8,0);
-        lcd_printf("R%u", reg);
-        _delay_ms(100);*/
-        //64 16 1 first loop 64=New data received and bit 3:1 is all 0 meaning datapipe 0, 16=data in RX fifo. 1 = RPD
-        //78 17 1 from second loop i believe 78 = 64bit still set(RX_DR),bit 3:1 is 111 meaning RX fifo empty. 1 = RPD
 
         //Battery monitor:
         int read = analogRead(BATTERY_MONITOR_PIN);
         float voltage = (analogRead(BATTERY_MONITOR_PIN) / 1023.0) * 4.7 * 3;
         float voltage2 = (200 / 1023.0) * 4.7 * 3;
         
-        int whole = voltage;
-        int decimal = (voltage - whole) * 100;
+        uint16_t whole = voltage;
+        uint16_t decimal = (voltage - whole) * 100;
+
+        
+
+        TxData[2] = (uint8_t)(whole & 0xFF);
+        TxData[3] = (uint8_t)(whole >> 8);
+        TxData[4] = (uint8_t)(decimal & 0xFF);
+        TxData[5] = (uint8_t)(decimal >> 8);
+
+        uint16_t whole1 = (uint16_t)((TxData[3] << 8) | TxData[2]);
+        uint16_t deci = (uint16_t)((TxData[5] << 8) | TxData[4]);
 
         lcd_set_cursor(0,0);
-        lcd_printf("%02d.%.02d", whole, decimal);
+        lcd_printf("%.02u.%.02u", whole1, deci);
+        
 
         //lcd_set_cursor(7,0);
         //lcd_printf("Volts");
-        _delay_ms(200);
-        lcd_clear();
+        
+        //TxMode
+        NRF24_Transmit(TxData, 32);
 
-        if (NRF24_RXisDataReady(0) == 1)
+        if(NRF24_Transmit(TxData, 32)){
+            lcd_set_cursor(0,1);
+            lcd_printf("Msg sent");
+        }
+        else
+        {
+            lcd_set_cursor(0,1);
+            lcd_printf("Msg not sent");
+        }
+        _delay_ms(50);
+        lcd_clear();
+        
+
+        //RxMode
+        /*if (NRF24_RXisDataReady(0) == 1)
         {   
             NRF24_Receive(RxData);
-            _delay_ms(10);
+            //_delay_ms(10);
             
             uint16_t receivedValueX = (uint16_t)((RxData[3] << 8) | RxData[2]);
             uint16_t receivedValueY = (uint16_t)((RxData[5] << 8) | RxData[4]);
@@ -103,7 +118,7 @@ int main()
             ConvertToPercentage(&percentX);
             ConvertToPercentage(&percentY);
 
-            
+            //lcd_clear();
             lcd_set_cursor(0,1);
             lcd_printf("%u", receivedValueX);
             lcd_set_cursor(7,1);
@@ -111,7 +126,7 @@ int main()
 
             servo1_set_percentage(percentX);
 
-            _delay_ms(10);
+            _delay_ms(50);
             
         }
         else{
@@ -119,7 +134,7 @@ int main()
             lcd_printf("NO MESSAGE");
             _delay_ms(1000);
             
-        }       
+        }*/
   	}
     return 0;
 }

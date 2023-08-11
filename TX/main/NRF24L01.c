@@ -290,25 +290,31 @@ void nrfsendCmd (uint8_t cmd, spi_device_handle_t *spi_device_handle)
 }
 
 
-void NRF24_Init(spi_device_handle_t *spi_device_handle){
+void NRF24_Init(uint8_t *TX_Address,uint8_t *RX_Address, uint8_t channel, spi_device_handle_t *spi_device_handle){
 
     CE_Disable();
-
+    
     nrf24_WriteRegister(CONFIG, 0, spi_device_handle); //Will be configured later.
-
 
     nrf24_WriteRegister(EN_AA, 0, spi_device_handle); //No auto-Acknowledgment
 
-
-    nrf24_WriteRegister(EN_RXADDR, 0, spi_device_handle); //Will be configured later.
+    //nrf24_WriteRegister(EN_RXADDR, 0, spi_device_handle); //Will be configured later.
 
     nrf24_WriteRegister(SETUP_AW, 0x03, spi_device_handle); //5bytes for address (setup address width)
 
     nrf24_WriteRegister(SETUP_RETR, 0, spi_device_handle); //Retransimssion disabled
 
-    nrf24_WriteRegister(RF_CH, 0, spi_device_handle);
-
     nrf24_WriteRegister(RF_SETUP, 0x0E, spi_device_handle); //Power = 0dbm,  data rate = 2mbps
+
+    nrf24_WriteRegister(RF_CH, channel, spi_device_handle); //choose a channel
+    
+    nrf24_WriteRegister(EN_RXADDR, 1,spi_device_handle);
+
+    nrf24_WriteRegisterMulti(RX_ADDR_P0, RX_Address, spi_device_handle, 5); // Write the RX address
+
+    nrf24_WriteRegister(RX_PW_P0, 32, spi_device_handle); /// 32 bit payload size for pipe 0
+
+    nrf24_WriteRegisterMulti(TX_ADDR, TX_Address, spi_device_handle, 5); // Write the TX address
 
     CE_Enable();
 }
@@ -317,52 +323,24 @@ void NRF24_Init(spi_device_handle_t *spi_device_handle){
 //---------------------Transmitter Methods----------------------
 
 
-void NRF24_TXMode(uint8_t *Address, uint8_t channel, spi_device_handle_t *spi_device_handle){ //put the NRF24L01 in TXMode
+void NRF24_TXMode(spi_device_handle_t *spi_device_handle){ //put the NRF24L01 in TXMode
 
     CE_Disable();
 
-    nrf24_WriteRegister(RF_CH, channel, spi_device_handle); //Choose a channel
+    //nrf24_WriteRegister(RF_CH, channel, spi_device_handle); //Choose a channel
 
-    nrf24_WriteRegisterMulti(TX_ADDR, Address, spi_device_handle, 5); // Write the TX address
-
-    //TESTING:
-    /*uint8_t data[7];
-    data[0] = 0;
-    data[1] = 1;
-    data[2] = 2;
-    data[3] = 3;
-    data[4] = 4;
-    data[5] = 5;
-    data[6] = 6;
-
-    ESP_LOGI(TAG, "WRITE DATA buffer[0]: %u", data[0]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[1]: %u", data[1]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[2]: %u", data[2]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[3]: %u", data[3]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[4]: %u", data[4]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[5]: %u", data[5]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[6]: %u", data[6]); //TESTING
-
-    ReadRegMulti(TX_ADDR, &data, 5, spi_device_handle);
-
-    ESP_LOGI(TAG, "WRITE DATA buffer[0]: %u", data[0]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[1]: %u", data[1]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[2]: %u", data[2]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[3]: %u", data[3]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[4]: %u", data[4]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[5]: %u", data[5]); //TESTING
-    ESP_LOGI(TAG, "WRITE DATA buffer[6]: %u", data[6]); //TESTING
-    */
+    //nrf24_WriteRegisterMulti(TX_ADDR, Address, spi_device_handle, 5); // Write the TX address
 
     //Power up the NRF24L01
     uint8_t config = NRF24_ReadReg(CONFIG, spi_device_handle); //Read the current settings.
-    //config = config | (1<<1);  //If not already a 1, change first bit to 1. That position will make the device power up.
+    //config = config | (1<<1) |;  //If not already a 1, change first bit to 1. That position will make the device power up.
     config = 114;
     nrf24_WriteRegister(CONFIG, config, spi_device_handle); //The write it back
     //Doing it this way will prevent other bits from changing.
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(2));
 
     CE_Enable();
+    vTaskDelay(pdMS_TO_TICKS(1));
 }
 
 uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t *spi_device_handle){
@@ -458,37 +436,34 @@ uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t *spi_device_handle)
 
 //----------------Receiver methods--------------------
 
-
-void NRF24_RXMode(uint8_t *Address, uint8_t channel, spi_device_handle_t *spi_device_handle){ //put the NRF24L01 in TXMode
+void NRF24_RXMode(spi_device_handle_t *spi_device_handle){
 
     CE_Disable();
 
-    nrf24_WriteRegister(RF_CH, channel, spi_device_handle); //Choose a channel
-
-    uint8_t readDataPipesReg = NRF24_ReadReg(EN_RXADDR, spi_device_handle);
-    readDataPipesReg = readDataPipesReg | (1<<1);
-    nrf24_WriteRegister(EN_RXADDR, readDataPipesReg, spi_device_handle); //Choose a dataPipe while making sure no other bits will change
-
-    nrf24_WriteRegister(RX_PW_P1, 32, spi_device_handle); //datapipe 1 will have 32 bytes of data for each received transmit.
-
-    nrf24_WriteRegisterMulti(TX_ADDR, Address, spi_device_handle, 5); // Write the RX address
-
     //Power up the NRF24L01 and set to RX mode
     uint8_t config = NRF24_ReadReg(CONFIG, spi_device_handle); //Read the current settings.
-    config = config | (1<<1) | (1<<0);  //If not already a 1, change first bit to 1. That position will make the device power up.
+    config = config | (0<<PWR_UP);  //Power down before changing registers.
     nrf24_WriteRegister(CONFIG, config, spi_device_handle); //Then write it back
-    //Doing it this way will prevent other bits from changing.
+    config = config | (1<<PWR_UP) | (1<<PRIM_RX); //power up and in correct mode.
+    nrf24_WriteRegister(CONFIG, config, spi_device_handle);
+    vTaskDelay(pdMS_TO_TICKS(2));
 
     CE_Enable();
+    vTaskDelay(pdMS_TO_TICKS(1));
 }
 
 uint8_t NRF24_RXisDataReady(int pipeNum ,spi_device_handle_t *spi_device_handle){
-    uint8_t statusReg = NRF24_ReadReg(STATUS, spi_device_handle);
+    uint8_t statusReg = NRF24_ReadReg(FIFO_STATUS, spi_device_handle);
+    ESP_LOGI(TAG, "FIFO: %u", statusReg);
+
+    statusReg = NRF24_ReadReg(STATUS, spi_device_handle);
+    ESP_LOGI(TAG, "STATUS: %u", statusReg);
+
+
 
     //Check if bit number 6 is 1 and that bit 1-3 matches pipeNum.
-    if((statusReg & (1<<6)) && (statusReg & (pipeNum<<1))){
-        nrf24_WriteRegister(STATUS, (1<<6), spi_device_handle);
-
+    if(statusReg & (1<<RX_DR)){//if((statusReg & (1<<RX_DR)) && (statusReg & (pipeNum<<RX_P_NO))){
+        nrf24_WriteRegister(STATUS, (1<<RX_DR), spi_device_handle); //Write 1 to clear bit.
         return 1;
     }
     return 0;
@@ -497,34 +472,26 @@ uint8_t NRF24_RXisDataReady(int pipeNum ,spi_device_handle_t *spi_device_handle)
 
 void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle){
 
-    uint8_t cmdToSend = R_RX_PAYLOAD; //Read payload, payload will then be deleted in LRF24 automagicaly
-
-    spi_transaction_t trans[2] = {
-        {
-        .length = 8,  // Length in bits of command
+    uint8_t cmdToSend = R_RX_PAYLOAD;
+    ESP_LOGI(TAG, "In receive");
+    spi_transaction_t trans = {
+        .length = 8*33,  // Length in bits of command
         .tx_buffer = &cmdToSend, //Command to send
-        .rx_buffer = NULL,
-        .user = NULL,
-        },
-        {
-        .rxlength = 8 * 32,  // Length in bits of payload we have set the payload length to 32 bytes(i think)
-        .tx_buffer = NULL,
         .rx_buffer = dataStorage,
         .user = NULL,
-        }
     };
 
     CS_Select();
-
-	esp_err_t ret = spi_device_transmit(*spi_device_handle, &trans[0]);
+    ESP_LOGI(TAG, "before transmit");
+	esp_err_t ret = spi_device_transmit(*spi_device_handle, &trans);
     ESP_ERROR_CHECK(ret);
-
+    ESP_LOGI(TAG, "after transmit");
     CS_Unselect();
 
     vTaskDelay(pdMS_TO_TICKS(1)); //Delay for the pin to settle
 
-    cmdToSend = FLUSH_RX;
-    nrfsendCmd(cmdToSend, spi_device_handle);
+    //cmdToSend = FLUSH_RX;
+    nrfsendCmd(FLUSH_RX, spi_device_handle);
 }
 
 

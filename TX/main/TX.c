@@ -76,12 +76,35 @@ void app_main(void)
     uint8_t TxAddress[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA}; //40bits
     uint8_t TxData[32];
 
-    NRF24_Init(&spi_device_handle);
+    uint8_t RxAddress[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE};
+    uint8_t RxData[32];
+    
+    NRF24_Init(TxAddress, RxAddress, 55, &spi_device_handle);
 
-    NRF24_TXMode(TxAddress, 55, &spi_device_handle);
-
+    //NRF24_TXMode(&spi_device_handle);
+    
+    NRF24_RXMode(&spi_device_handle);
+    
     while (true)
     {   
+        uint16_t whole = (uint16_t)((RxData[4] << 8) | RxData[3]);
+        uint16_t decimal = (uint16_t)((RxData[6] << 8) | RxData[5]);
+
+        if (NRF24_RXisDataReady(0, &spi_device_handle) == 1)
+        {   
+            ESP_LOGI(TAG, "We have data available!");
+            NRF24_Receive(RxData, &spi_device_handle);
+
+            ESP_LOGI(TAG, "%.02u.%.02uV", whole, decimal);
+
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            
+        }
+        else{
+            ESP_LOGI(TAG, "NO MESSAGE :-(");
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            
+        }
         
         uint16_t xReading = adc1_get_raw(ADC1_CHANNEL_0);
         uint16_t yReading = adc1_get_raw(ADC1_CHANNEL_3);
@@ -89,10 +112,7 @@ void app_main(void)
 
         uint8_t switchUp = gpio_get_level(PIN_NUM_SW_UP);
         uint8_t switchDown = gpio_get_level(PIN_NUM_SW_DOWN);
-        ESP_LOGI(TAG, "UP: %u, DOWN: %u", switchUp, switchDown);
-        
-        
-
+        //ESP_LOGI(TAG, "UP: %u, DOWN: %u", switchUp, switchDown);
 
         //buffer[1] = (uint8_t)(value & 0xFF); // Extract the lower 8 bits of the uint16_t
         //buffer[2] = (uint8_t)((value >> 8) & 0xFF);
@@ -107,10 +127,14 @@ void app_main(void)
         uint16_t receivedValueY = (uint16_t)((TxData[5] << 8) | TxData[4]);
         //ESP_LOGI(TAG, "Set together: Y: %u, X:%u", receivedValueY, receivedValueX);
 
-        if(NRF24_Transmit(TxData, &spi_device_handle)){
+        /*if(NRF24_Transmit(TxData, &spi_device_handle)){
             //ESP_LOGI(TAG, "SEEMS TO TRANSMIT");
         }
-        nrf24_WriteRegister(STATUS, 32, &spi_device_handle);
+        nrf24_WriteRegister(STATUS, 32, &spi_device_handle);*/
+
+
+
+
         //uint8_t reg = NRF24_ReadReg(STATUS, &spi_device_handle);
         //ESP_LOGI(TAG, "STATUS RESET: %u", reg);
         //reg = NRF24_ReadReg(FIFO_STATUS, spi_device_handle);

@@ -13,10 +13,6 @@
 #include "lcd.h"
 #include <util/delay.h>
 
-//#include "driver/spi_common.h"
-//#include "driver/gpio.h"
-//#include "driver/spi_master.h"
-//#include "esp_log.h"
 //#include "freertos/FreeRTOS.h"
 //#include "freertos/task.h"
 
@@ -60,7 +56,7 @@ void SPI_init(){
     SPR0 = 1, SPR1 = 1: fck/128 (SPI clock frequency is the system clock divided by 128)
 */
     //SPSR |= _BV(SPI2X); //Double SPI Clock speed
-
+    _delay_ms(100);// Power on reset 100ms
 }
 
 void CS_Select(){
@@ -79,18 +75,7 @@ void CE_Disable(){
     BIT_CLEAR(PORTB, PIN_NUM_CE);
 }
 
-/*void CE_Enable(){
-    BIT_CLEAR(DDRB, PIN_NUM_CE);
-}
-
-void CE_Disable(){
-    BIT_SET(DDRB, PIN_NUM_CE);
-}*/
-
-
 void nrf24_WriteRegister(uint8_t reg, uint8_t data){//This method is used to write to a specific register, the NRF24L01 has registers to configure different settings for the NRF24L01.
-
-    //CE_Disable();
 
     reg = reg|1<<5; //In datasheet w_register says fifth bit needs to be a 1.
     CS_Select();
@@ -109,13 +94,10 @@ void nrf24_WriteRegister(uint8_t reg, uint8_t data){//This method is used to wri
     //loop_until_bit_is_set(SPSR, SPIF);
 
     CS_Unselect();
-    //CE_Enable();
 }
 
 void nrf24_WriteRegisterMulti(uint8_t reg, uint8_t *data, int numberofBytes){//This method is used to write to s specific register, the NRF24L01 has registers to configure different settings for the NRF24L01.
     
-    //CE_Disable();
-
     reg = reg|1<<5;
 
     CS_Select();
@@ -132,14 +114,11 @@ void nrf24_WriteRegisterMulti(uint8_t reg, uint8_t *data, int numberofBytes){//T
     }
     
     CS_Unselect();
-
-    //CE_Enable();
 }
 
 
 uint8_t NRF24_ReadReg(const uint8_t reg){
 
-    //CE_Disable();
     CS_Select();
 
     uint8_t response[2] = { 0 };
@@ -151,8 +130,6 @@ uint8_t NRF24_ReadReg(const uint8_t reg){
 
     // Read the FIFO_STATUS
     response[0] = SPDR;
-    //lcd_set_cursor(0,1);
-    //lcd_printf("STATUS = %u", response[0]);
 
     SPDR = 0xFF; //Dummy bits that wont do anything. Just to trigger the NRF so it will send the registry data.
 
@@ -161,17 +138,12 @@ uint8_t NRF24_ReadReg(const uint8_t reg){
 
     response[1] = SPDR;
 
-    //lcd_set_cursor(0,1);
-    //lcd_printf("REGISTRY = %u", response[1]);
     CS_Unselect();
-    //CE_Enable();
 
     return SPDR; //After reg has been sent to the NRF24, NRF24 will send the reg status
 }
 
 void ReadRegMulti(uint8_t reg, uint8_t *data, int numberofBytes){
-    //CE_Disable();
-
 
     CS_Select();
 
@@ -190,14 +162,10 @@ void ReadRegMulti(uint8_t reg, uint8_t *data, int numberofBytes){
     }
 
     CS_Unselect();
-    //CE_Enable();
-
 }
 
 void nrfsendCmd (uint8_t cmd)
 {   
-    //CE_Disable();
-
 	// Pull the CS Pin LOW to select the device
 	CS_Select();
 
@@ -206,92 +174,89 @@ void nrfsendCmd (uint8_t cmd)
 
 	// Pull the CS HIGH to release the device
 	CS_Unselect();
-    //CE_Enable();
 }
 
 
-void NRF24_Init(){
+void NRF24_Init(uint8_t *TX_Address,uint8_t *RX_Address, uint8_t channel){
 
-    //CE_Disable();
+    CE_Disable();
 
     nrf24_WriteRegister(CONFIG, 0); //Will be configured later.
 
-    uint8_t regValue = NRF24_ReadReg(CONFIG);
-
-    //lcd_set_cursor(0,1);
-    //lcd_printf("REGISTRY = %u", regValue);
-
     nrf24_WriteRegister(EN_AA, 0); //No auto-Acknowledgment
 
-    nrf24_WriteRegister(EN_RXADDR, 0); //Will be configured later.
+    //nrf24_WriteRegister(EN_RXADDR, 0); //Will be configured later.
 
     nrf24_WriteRegister(SETUP_AW, 0x03);
 
     nrf24_WriteRegister(SETUP_RETR, 0); //Retransimssion disabled
 
-    nrf24_WriteRegister(RF_CH, 0);
-
     nrf24_WriteRegister(RF_SETUP, 0x0E); //Power = 0dbm,  data rate = 2mbps
 
-    //CE_Enable();
+    nrf24_WriteRegister(RF_CH, channel); //choose a channel
+    
+    nrf24_WriteRegister(EN_RXADDR, 1);
+
+    nrf24_WriteRegisterMulti(RX_ADDR_P0, RX_Address, 5); // Write the RX address
+
+    nrf24_WriteRegister(RX_PW_P0, 32); /// 32 bit payload size for pipe 0
+
+    nrf24_WriteRegisterMulti(TX_ADDR, TX_Address, 5); // Write the TX address
+
+    CE_Enable();
+
 }
 
 
 //---------------------Transmitter Methods----------------------
 
 
-void NRF24_TXMode(uint8_t *Address, uint8_t channel){ //put the NRF24L01 in TXMode
+void NRF24_TXMode(){
 
-    //CE_Disable();
-
-    nrf24_WriteRegister(RF_CH, channel); //Choose a channel
-
-    nrf24_WriteRegisterMulti(TX_ADDR, Address, 5); // Write the TX address
-
-    uint8_t regValue = NRF24_ReadReg(TX_ADDR);
-
-    //TESTING:
-    uint8_t data[7];
-    data[0] = 0;
-    data[1] = 1;
-    data[2] = 2;
-    data[3] = 3;
-    data[4] = 4;
-    data[5] = 5;
-    data[6] = 6;
-
-
-    ReadRegMulti(TX_ADDR, &data, 5);
-
-
+    CE_Disable();
     //Power up the NRF24L01
     uint8_t config = NRF24_ReadReg(CONFIG); //Read the current settings.
-    config = config | (1<<1);  //If not already a 1, change first bit to 1. That position will make the device power up.
+    config = config | ((1<<1) | (0<<0));  //Bit 1 set to 1 = Power up, bit 0 set to 0 = TX mode.
     nrf24_WriteRegister(CONFIG, config); //The write it back
     //Doing it this way will prevent other bits from changing.
 
-
-    config = NRF24_ReadReg(CONFIG); //TESTING
-    //CE_Enable();
+    _delay_ms(2);
+    CE_Enable();
+    _delay_us(10);
 }
 
-uint8_t NRF24_Transmit(uint8_t *payload){
-
+uint8_t NRF24_Transmit(uint8_t *payload, int numberofBytes){
+    
     uint8_t cmdToSend = W_TX_PAYLOAD; //this command tells the LRF24L01 that following this a payload will be sent.
 
-    uint8_t buffer[33];
+    //uint8_t buffer[33];
 
     CS_Select();
 
+    SPDR = cmdToSend;
+    while(!(SPSR & (1<<SPIF)));
+
+    for (int i = 0; i < numberofBytes; i++)
+    {
+        SPDR = payload[i];
+        while(!(SPSR & (1<<SPIF)));
+    }
 
     CS_Unselect();
-
-    //vTaskDelay(pdMS_TO_TICKS(1)); //Delay for the pin to settle
+    _delay_ms(20);
 
     uint8_t fifoStatus = NRF24_ReadReg(FIFO_STATUS); //Read fifo status to see if LRF24L01 properly received transmission.
-                                                                        //FIFO = first-in-first-out    
+    lcd_set_cursor(3,0);
+    lcd_printf("%u", payload[2]);
+    lcd_set_cursor(6,0);
+    lcd_printf("%u", payload[3]);
+    lcd_set_cursor(9,0);
+    lcd_printf("%u", payload[4]);
+    lcd_set_cursor(12,0);
+    lcd_printf("%u", payload[5]);
+    //_delay_ms(2000);
     
-    if((fifoStatus & (1<<4)) && (!(fifoStatus & (1<<3)))){
+    if((fifoStatus & (1<<TX_EMPTY)) && (!(fifoStatus & (1<<3)))){ //3 is a reserved bit but checking it too see that NRF is in correct status also.
         cmdToSend = FLUSH_TX;
         nrfsendCmd(cmdToSend);
         return 1;
@@ -303,64 +268,20 @@ uint8_t NRF24_Transmit(uint8_t *payload){
 //----------------Receiver methods--------------------
 
 
-void NRF24_RXMode(uint8_t *Address, uint8_t channel){ //put the NRF24L01 in TXMode
+void NRF24_RXMode(){ //put the NRF24L01 in TXMode
 
-    //CE_Disable();
-
-    //nrf24_WriteRegister(STATUS, 0x00);
-
-    nrf24_WriteRegister(RF_CH, channel); //choose a channel
-    //uint8_t rfch = NRF24_ReadReg(RF_CH);
-    //lcd_set_cursor(0,0);
-    //lcd_printf("rfch: %u", rfch);
-    
-    nrf24_WriteRegister(EN_RXADDR, 1);
-
-    //uint8_t readreg = NRF24_ReadReg(EN_RXADDR);
-
-    nrf24_WriteRegisterMulti(RX_ADDR_P0, Address, 5); // Write the RX address
-
-    nrf24_WriteRegister(RX_PW_P0, 32); /// 32 bit payload size for pipe 0
-
-
-
-    /* We must write the address for Data Pipe 1, if we want to use any pipe from 2 to 5
-	 * The Address from DATA Pipe 2 to Data Pipe 5 differs only in the LSB
-	 * Their 4 MSB Bytes will still be same as Data Pipe 1
-	 *
-	 * For Eg->
-	 * Pipe 1 ADDR = 0xAABBCCDD11
-	 * Pipe 2 ADDR = 0xAABBCCDD22
-	 * Pipe 3 ADDR = 0xAABBCCDD33
-	 *
-	 */
-
-     /*
-    // select data pipe 2
-	uint8_t en_rxaddr = NRF24_ReadReg(EN_RXADDR);
-	en_rxaddr = en_rxaddr | (1<<2);
-	nrf24_WriteRegister (EN_RXADDR, en_rxaddr);
-    
-    nrf24_WriteRegisterMulti(RX_ADDR_P1, Address, 5);  // Write the Pipe1 address
-	nrf24_WriteRegister(RX_ADDR_P2, 0xEE);  // Write the Pipe2 LSB address
-
-	nrf24_WriteRegister (RX_PW_P2, 32);   // 32 bit payload size for pipe 2
-    */
-    
-
-    
+    CE_Disable();
 
     //Power up the NRF24L01 and set to RX mode
     uint8_t config = NRF24_ReadReg(CONFIG); //Read the current settings.
     config = config | (1<<1) | (1<<0);  //If not already a 1, change first bit to 1. That position will make the device power up.
-    //config = 3;//TEST
+
     nrf24_WriteRegister(CONFIG, config); //Then write it back
     //Doing it this way will prevent other bits from changing.
-    _delay_ms(20);
+    _delay_ms(2);
 
     CE_Enable();
-    //CE_Disable();
-    _delay_ms(30);
+    _delay_us(12);
 }
 
 uint8_t NRF24_RXisDataReady(int pipeNum){
@@ -369,17 +290,9 @@ uint8_t NRF24_RXisDataReady(int pipeNum){
 
     //Check if bit number 6 is 1 and that bit 1-3 matches pipeNum.
     if((statusReg & (1<<6))){//if((statusReg & (1<<6)) && (statusReg & (pipeNum<<1))){
-        //nrf24_WriteRegister(STATUS, (1<<6));
-        //lcd_set_cursor(12,0);
-        //lcd_printf("Rece");
-        //_delay_ms(1000);
+
         return 1;
     }
-    //lcd_set_cursor(12,0);
-    //lcd_printf("Noth");
-    //nrf24_WriteRegister(STATUS, (1<<4));
-    //nrfsendCmd(FLUSH_RX);
-    //_delay_ms(1000);
     return 0;
 }
 
@@ -407,11 +320,8 @@ void NRF24_Receive(uint8_t *dataStorage){
 
     _delay_ms(1); //Delay for the pin to settle
     
-    //nrf24_WriteRegister(STATUS, (1<<6));//TEST
     cmdToSend = FLUSH_RX;
     nrfsendCmd(cmdToSend);
-
-    //nrf24_WriteRegister(STATUS, (1<<6));
 }
 
 

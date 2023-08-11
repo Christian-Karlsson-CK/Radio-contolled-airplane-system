@@ -21,14 +21,14 @@ void ReadRegMulti(uint8_t, uint8_t*, int, spi_device_handle_t*);
 
 void nrfsendCmd (uint8_t, spi_device_handle_t*);
 
-void NRF24_Init(spi_device_handle_t*);
+void NRF24_Init(uint8_t *TX_Address,uint8_t *RX_Address, uint8_t channel, spi_device_handle_t*);
 
 //TX
-void NRF24_TXMode(uint8_t *Address, uint8_t channel, spi_device_handle_t *spi_device_handle);
+void NRF24_TXMode(spi_device_handle_t *spi_device_handle);
 uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t* spi_handle);
 
 //RX
-void NRF24_RXMode(uint8_t *Address, uint8_t channel, spi_device_handle_t *spi_device_handle);
+void NRF24_RXMode(spi_device_handle_t *spi_device_handle);
 uint8_t NRF24_RXisDataReady(int pipeNum ,spi_device_handle_t *spi_device_handle);
 void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle);
 
@@ -87,6 +87,18 @@ void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle)
 #define REUSE_TX_PL   0xE3
 #define NOP           0xFF
 
+/*Config register*/
+#define PRIM_RX       0x00
+#define PWR_UP        0x01
+
+/*Status register*/
+#define RX_P_NO       0x01 
+#define MAX_RT        0x04
+#define TX_DS         0x05
+#define RX_DR         0x06
+
+/*Fifo status*/
+#define TX_EMPTY      0x04
 
 #endif /* _NRF24L01_H_ */
 
