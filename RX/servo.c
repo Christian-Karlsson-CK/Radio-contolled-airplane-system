@@ -60,4 +60,4 @@ void servo2_set_percentage(signed char percentage)
 	{
 		OCR1B = RESET_VALUE+STOP_VALUE+(RANGE/100*percentage);
 	}
-}
+}  	

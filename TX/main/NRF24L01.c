@@ -473,7 +473,7 @@ uint8_t NRF24_RXisDataReady(int pipeNum ,spi_device_handle_t *spi_device_handle)
 void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle){
 
     uint8_t cmdToSend = R_RX_PAYLOAD;
-    ESP_LOGI(TAG, "In receive");
+
     spi_transaction_t trans = {
         .length = 8*33,  // Length in bits of command
         .tx_buffer = &cmdToSend, //Command to send
@@ -482,10 +482,8 @@ void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle)
     };
 
     CS_Select();
-    ESP_LOGI(TAG, "before transmit");
 	esp_err_t ret = spi_device_transmit(*spi_device_handle, &trans);
     ESP_ERROR_CHECK(ret);
-    ESP_LOGI(TAG, "after transmit");
     CS_Unselect();
 
     vTaskDelay(pdMS_TO_TICKS(1)); //Delay for the pin to settle

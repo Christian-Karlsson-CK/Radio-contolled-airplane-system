@@ -36,11 +36,10 @@ DONE:
 5. Properly send joystick input from TX to RX using NRF24L01 transceiver, RX then move a servo as intended.
 5.1 Create a voltage divider with resistors so that i can read battery voltage into the AVR MCU. Battery = 3cell LIPO ~9.9V = Empty, ~12.8V = full.
 5.2 Send data from AVR to ESP32 with battery voltage.
+5.3 Display voltage on LCD screen.
 
 TODO:
-
-
-5.3 Display voltage on LCD screen.
+5.4 Make TX and RX switch between TX and RX mode to both send and receive data in a controlled manner.
 6. From the ESP32 test ESC and make it work with the motor.
 7. Send joystick input from TX to RX for ESC control.
 8. Create custom circuitboard for transmitter for all pieces like joysticks, MCU, on/off button, switches etc.
@@ -52,6 +51,8 @@ PROBLEMS:
 If the joystick y axis is pulled to the top reading 4095, x axis also reads 4095?? Should be ~2650. SOLVED: joystick voltage should not be 5V but use the 3.3v instead as the ADC can not read up to 5V.
 
 If the joystick x axis is pulled to the right reading 4095, y axis also reads 4095?? Should be ~2650.SOLVED: joystick voltage should not be 5V but use the 3.3v instead as the ADC can not read up to 5V.
+
+GPIO 13 on the esp32 is JTAG configured. It needs a reset to function as a normal GPIO. Configuring as output and setting logical HIGH will give a reading of ~2.84Volts with multimeter if not reset. No wonder the LCD didnt work. Took atleast 10hours to find out and 1 esp32 wasted by shorting it with the multimeter :-( .
 
 Learnings:
 Clock frequenzy on the SPI communication needs to be set to the same value for both the Atmega328p and ESP32.

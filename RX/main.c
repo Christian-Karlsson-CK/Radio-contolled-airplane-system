@@ -22,7 +22,7 @@
 
 #define SERVO_1 3
 
-#define BATTERY_MONITOR_PIN 4
+#define BATTERY_MONITOR_PIN 3
 
 void ConvertToPercentage(double*);
 uint16_t read_analog_pin(uint8_t pin);
@@ -81,6 +81,9 @@ int main()
         uint16_t whole1 = (uint16_t)((TxData[3] << 8) | TxData[2]);
         uint16_t deci = (uint16_t)((TxData[5] << 8) | TxData[4]);
 
+        //uint16_t whole1 = 11;
+        //uint16_t deci = 22;
+
         lcd_set_cursor(0,0);
         lcd_printf("%.02u.%.02u", whole1, deci);
         
@@ -100,7 +103,7 @@ int main()
             lcd_set_cursor(0,1);
             lcd_printf("Msg not sent");
         }
-        _delay_ms(50);
+        _delay_ms(1000);
         lcd_clear();
         
 

@@ -30,6 +30,7 @@ idf.py flash -p COM3 monitor
 #include "driver/spi_master.h"
 
 #include "NRF24L01.h"
+#include "lcd.h"
 
 //NRF24L01 PINS
 #define SPIHOST HSPI_HOST //Using VSPI on ESP32 SPIHOST = The SPI controller peripheral inside ESP32. VSPI_HOST = SPI3_HOST=2
@@ -84,18 +85,69 @@ void app_main(void)
     //NRF24_TXMode(&spi_device_handle);
     
     NRF24_RXMode(&spi_device_handle);
+
+    lcd_init();
     
     while (true)
     {   
+
+
+        vTaskDelay(pdMS_TO_TICKS(3000));
         uint16_t whole = (uint16_t)((RxData[4] << 8) | RxData[3]);
         uint16_t decimal = (uint16_t)((RxData[6] << 8) | RxData[5]);
+        
+        //uint16_t whole = 9;
+        char buffer[6]; // Enough space for 5 digits plus null-terminator
+        snprintf(buffer, sizeof(buffer), "%u", whole); // Format the value as a string
+
+        char buffer1[6]; // Enough space for 5 digits plus null-terminator
+        snprintf(buffer1, sizeof(buffer), "%u", decimal); // Format the value as a string
+        
+        if (whole < 10)
+        {   
+            lcd_send_data('0');
+            lcd_send_data(buffer[0]);
+            lcd_send_data('.');
+            if (decimal < 10)
+            {
+                lcd_send_data('0');
+                lcd_send_data(buffer1[0]);
+            }
+            else{
+                lcd_send_data(buffer1[0]);
+                lcd_send_data(buffer1[1]);
+            }
+            
+            lcd_send_data('V');
+        }
+        else{
+            lcd_send_data(buffer[0]);
+            lcd_send_data(buffer[1]);
+            if (decimal < 10)
+            {
+                lcd_send_data('0');
+                lcd_send_data(buffer1[0]);
+            }
+            else{
+                lcd_send_data(buffer1[0]);
+                lcd_send_data(buffer1[1]);
+            }
+            
+            lcd_send_data('V');
+        }
+        
+        ESP_LOGI(TAG, "buffer:%c", buffer[0]);
+        ESP_LOGI(TAG, "buffer:%c", buffer[1]);
+        //lcd_send_data(buffer[0]);
+        //lcd_send_data(buffer[1]);
+        //lcd_send_data('V');
 
         if (NRF24_RXisDataReady(0, &spi_device_handle) == 1)
         {   
             ESP_LOGI(TAG, "We have data available!");
             NRF24_Receive(RxData, &spi_device_handle);
 
-            ESP_LOGI(TAG, "%.02u.%.02uV", whole, decimal);
+            //ESP_LOGI(TAG, "%.02u.%.02uV", whole, decimal);
 
             vTaskDelay(pdMS_TO_TICKS(1000));
             
@@ -127,10 +179,10 @@ void app_main(void)
         uint16_t receivedValueY = (uint16_t)((TxData[5] << 8) | TxData[4]);
         //ESP_LOGI(TAG, "Set together: Y: %u, X:%u", receivedValueY, receivedValueX);
 
-        /*if(NRF24_Transmit(TxData, &spi_device_handle)){
+        if(NRF24_Transmit(TxData, &spi_device_handle)){
             //ESP_LOGI(TAG, "SEEMS TO TRANSMIT");
         }
-        nrf24_WriteRegister(STATUS, 32, &spi_device_handle);*/
+        nrf24_WriteRegister(STATUS, 32, &spi_device_handle);
 
 
 
@@ -140,8 +192,9 @@ void app_main(void)
         //reg = NRF24_ReadReg(FIFO_STATUS, spi_device_handle);
         //ESP_LOGI(TAG, "FIFO_STATUS: %u", reg);
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        //vTaskDelay(pdMS_TO_TICKS(10));
         //vTaskDelay(100);
+        
     }
     
 

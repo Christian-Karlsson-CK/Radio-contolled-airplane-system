@@ -246,14 +246,14 @@ uint8_t NRF24_Transmit(uint8_t *payload, int numberofBytes){
     _delay_ms(20);
 
     uint8_t fifoStatus = NRF24_ReadReg(FIFO_STATUS); //Read fifo status to see if LRF24L01 properly received transmission.
-    lcd_set_cursor(3,0);
-    lcd_printf("%u", payload[2]);
-    lcd_set_cursor(6,0);
-    lcd_printf("%u", payload[3]);
-    lcd_set_cursor(9,0);
-    lcd_printf("%u", payload[4]);
-    lcd_set_cursor(12,0);
-    lcd_printf("%u", payload[5]);
+    //lcd_set_cursor(3,0);
+    //lcd_printf("%u", payload[2]);
+    //lcd_set_cursor(6,0);
+    //lcd_printf("%u", payload[3]);
+    //lcd_set_cursor(9,0);
+    //lcd_printf("%u", payload[4]);
+    //lcd_set_cursor(12,0);
+    //lcd_printf("%u", payload[5]);
     //_delay_ms(2000);
     
     if((fifoStatus & (1<<TX_EMPTY)) && (!(fifoStatus & (1<<3)))){ //3 is a reserved bit but checking it too see that NRF is in correct status also.
