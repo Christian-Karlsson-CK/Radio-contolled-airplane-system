@@ -89,11 +89,11 @@ void lcd_send_command(uint8_t command) {
 
 void lcd_send_data(uint8_t data) {
     gpio_set_level(LCD_RS_PIN, 1); // RS = 1 (data mode)
-    vTaskDelay(pdMS_TO_TICKS(10));
+    //vTaskDelay(pdMS_TO_TICKS(1));//10
     lcd_send_nibble(data >> 4);
     lcd_send_nibble(data);
     
-    vTaskDelay(pdMS_TO_TICKS(2)); // Delay after sending data
+    vTaskDelay(pdMS_TO_TICKS(0.3)); // Delay after sending data
 }
 
 void lcd_init() {

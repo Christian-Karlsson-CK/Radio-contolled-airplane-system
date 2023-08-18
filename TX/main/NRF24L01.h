@@ -3,8 +3,6 @@
 
 #include "driver/spi_master.h"
 
-
-
 //Common
 void SPI_init(spi_device_handle_t *spi_handle);
 
@@ -21,7 +19,7 @@ void ReadRegMulti(uint8_t, uint8_t*, int, spi_device_handle_t*);
 
 void nrfsendCmd (uint8_t, spi_device_handle_t*);
 
-void NRF24_Init(uint8_t *TX_Address,uint8_t *RX_Address, uint8_t channel, spi_device_handle_t*);
+void NRF24_Init(spi_device_handle_t*spi_device_handle);
 
 //TX
 void NRF24_TXMode(spi_device_handle_t *spi_device_handle);
@@ -88,8 +86,13 @@ void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle)
 #define NOP           0xFF
 
 /*Config register*/
-#define PRIM_RX       0x00
+#define MASK_RX_DR    0x06
+#define MASK_TX_DS    0x05
+#define MASK_MAX_RT   0x04
+#define EN_CRC        0x03
+#define CRCO          0x02
 #define PWR_UP        0x01
+#define PRIM_RX       0x00
 
 /*Status register*/
 #define RX_P_NO       0x01 

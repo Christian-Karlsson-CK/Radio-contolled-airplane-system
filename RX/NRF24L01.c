@@ -177,33 +177,31 @@ void nrfsendCmd (uint8_t cmd)
 }
 
 
-void NRF24_Init(uint8_t *TX_Address,uint8_t *RX_Address, uint8_t channel){
-
-    CE_Disable();
+void NRF24_Init(){
+    uint8_t RxAddress[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA}; //40bits
+    uint8_t TxAddress[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE};
 
     nrf24_WriteRegister(CONFIG, 0); //Will be configured later.
 
     nrf24_WriteRegister(EN_AA, 0); //No auto-Acknowledgment
 
-    //nrf24_WriteRegister(EN_RXADDR, 0); //Will be configured later.
-
     nrf24_WriteRegister(SETUP_AW, 0x03);
 
     nrf24_WriteRegister(SETUP_RETR, 0); //Retransimssion disabled
 
+    nrf24_WriteRegister(RF_CH, 0);
+
     nrf24_WriteRegister(RF_SETUP, 0x0E); //Power = 0dbm,  data rate = 2mbps
 
-    nrf24_WriteRegister(RF_CH, channel); //choose a channel
+    nrf24_WriteRegister(RF_CH, 55); //choose a channel
     
     nrf24_WriteRegister(EN_RXADDR, 1);
 
-    nrf24_WriteRegisterMulti(RX_ADDR_P0, RX_Address, 5); // Write the RX address
+    nrf24_WriteRegisterMulti(RX_ADDR_P0, RxAddress, 5); // Write the RX address
 
     nrf24_WriteRegister(RX_PW_P0, 32); /// 32 bit payload size for pipe 0
 
-    nrf24_WriteRegisterMulti(TX_ADDR, TX_Address, 5); // Write the TX address
-
-    CE_Enable();
+    nrf24_WriteRegisterMulti(TX_ADDR, TxAddress, 5); // Write the TX address
 
 }
 
@@ -214,11 +212,20 @@ void NRF24_Init(uint8_t *TX_Address,uint8_t *RX_Address, uint8_t channel){
 void NRF24_TXMode(){
 
     CE_Disable();
-    //Power up the NRF24L01
+
+    //Power down change do appropriate changes in config register then powr up the NRF24L01 set in TX mode.
     uint8_t config = NRF24_ReadReg(CONFIG); //Read the current settings.
-    config = config | ((1<<1) | (0<<0));  //Bit 1 set to 1 = Power up, bit 0 set to 0 = TX mode.
-    nrf24_WriteRegister(CONFIG, config); //The write it back
-    //Doing it this way will prevent other bits from changing.
+    config = config | (0<<PWR_UP); //Power down before changing registers.
+    nrf24_WriteRegister(CONFIG, config);//Then write it to NRF
+    config = (1<<MASK_RX_DR) | 
+             (1<<MASK_TX_DS) |
+             (1<<MASK_MAX_RT) | 
+             (1<<PWR_UP) | 
+             (0<<PRIM_RX);  // Power up in RXmode
+    //lcd_set_cursor(7,0);
+    //lcd_printf("%u", config);                
+    //config = 114;//TEST
+    nrf24_WriteRegister(CONFIG, config); //Then write it to NRF
 
     _delay_ms(2);
     CE_Enable();
@@ -243,10 +250,11 @@ uint8_t NRF24_Transmit(uint8_t *payload, int numberofBytes){
     }
 
     CS_Unselect();
-    _delay_ms(20);
+    _delay_ms(0.3);
 
     uint8_t fifoStatus = NRF24_ReadReg(FIFO_STATUS); //Read fifo status to see if LRF24L01 properly received transmission.
-    //lcd_set_cursor(3,0);
+    lcd_set_cursor(0,0);
+    lcd_printf("%u", fifoStatus);
     //lcd_printf("%u", payload[2]);
     //lcd_set_cursor(6,0);
     //lcd_printf("%u", payload[3]);
@@ -254,7 +262,7 @@ uint8_t NRF24_Transmit(uint8_t *payload, int numberofBytes){
     //lcd_printf("%u", payload[4]);
     //lcd_set_cursor(12,0);
     //lcd_printf("%u", payload[5]);
-    //_delay_ms(2000);
+    //_delay_ms(20);
     
     if((fifoStatus & (1<<TX_EMPTY)) && (!(fifoStatus & (1<<3)))){ //3 is a reserved bit but checking it too see that NRF is in correct status also.
         cmdToSend = FLUSH_TX;
@@ -274,14 +282,20 @@ void NRF24_RXMode(){ //put the NRF24L01 in TXMode
 
     //Power up the NRF24L01 and set to RX mode
     uint8_t config = NRF24_ReadReg(CONFIG); //Read the current settings.
-    config = config | (1<<1) | (1<<0);  //If not already a 1, change first bit to 1. That position will make the device power up.
+    config = config | (0<<PWR_UP); //Power down before changing registers.
+    nrf24_WriteRegister(CONFIG, config);//Then write it to NRF
+    //config = config | (1<<PWR_UP) | (1<<PRIM_RX);  // Power up in RXmode
+    config = (1<<MASK_RX_DR) | 
+             (1<<MASK_TX_DS) |
+             (1<<MASK_MAX_RT) | 
+             (1<<PWR_UP) | 
+             (1<<PRIM_RX);  // Power up in RXmode
+    //config = 3;//TEST
+    nrf24_WriteRegister(CONFIG, config); //Then write it to NRF
 
-    nrf24_WriteRegister(CONFIG, config); //Then write it back
-    //Doing it this way will prevent other bits from changing.
     _delay_ms(2);
-
     CE_Enable();
-    _delay_us(12);
+    _delay_us(10);
 }
 
 uint8_t NRF24_RXisDataReady(int pipeNum){

@@ -17,9 +17,9 @@ void ReadRegMulti(uint8_t startRegister, uint8_t* registerData, int registerData
 
 void nrfsendCmd (uint8_t cmd);
 
-void NRF24_Init(uint8_t *TX_Address,uint8_t *RX_Address, uint8_t channel);
+void NRF24_Init();
 
-//RX
+//TX
 void NRF24_TXMode();
 uint8_t NRF24_Transmit(uint8_t *payload, int numberofBytes);
 
@@ -83,8 +83,13 @@ void NRF24_Receive(uint8_t *dataStorage);
 #define NOP           0xFF
 
 /*Config register*/
-#define PRIM_RX       0x00
+#define MASK_RX_DR    0x06
+#define MASK_TX_DS    0x05
+#define MASK_MAX_RT   0x04
+#define EN_CRC        0x03
+#define CRCO          0x02
 #define PWR_UP        0x01
+#define PRIM_RX       0x00
 
 /*Status register*/
 #define RX_P_NO       0x01 
