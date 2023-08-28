@@ -173,7 +173,7 @@ void nrfsendCmd (uint8_t cmd)
     while(!(SPSR & (1<<SPIF)));
 
 	// Pull the CS HIGH to release the device
-	CS_Unselect();
+    CS_Unselect();
 }
 
 
@@ -253,8 +253,8 @@ uint8_t NRF24_Transmit(uint8_t *payload, int numberofBytes){
     _delay_ms(0.3);
 
     uint8_t fifoStatus = NRF24_ReadReg(FIFO_STATUS); //Read fifo status to see if LRF24L01 properly received transmission.
-    lcd_set_cursor(0,0);
-    lcd_printf("%u", fifoStatus);
+    //lcd_set_cursor(0,0);
+    //lcd_printf("%u", fifoStatus);
     //lcd_printf("%u", payload[2]);
     //lcd_set_cursor(6,0);
     //lcd_printf("%u", payload[3]);

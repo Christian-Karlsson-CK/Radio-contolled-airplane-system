@@ -36,13 +36,17 @@ DONE:
 5. Properly send joystick input from TX to RX using NRF24L01 transceiver, RX then move a servo as intended.
 5.1 Create a voltage divider with resistors so that i can read battery voltage into the AVR MCU. Battery = 3cell LIPO ~9.9V = Empty, ~12.8V = full.
 5.2 Send data from AVR to ESP32 with battery voltage.
-5.3 Display voltage on LCD screen.
+5.3 Display voltage on LCD screen. (This included changing a LCD lib from AVR to work in IDF)
 5.4 Make TX and RX switch between TX and RX mode to both send and receive data in a controlled manner. (mostly controlled, small servo fluctuations)
-
-TODO:
 6. From the ESP32 test ESC and make it work with the motor.
 7. Send joystick input from TX to RX for ESC control.
 7.1 Connect all buttons, switches, joysticks and everything else needed to test that the whole system functions as expected.
+7.2 Test whole system on an airplane and confirm that everything works as expected. (All analog control data is received properly to RX but, atmega328p seems not be able to control more than 2 servo/ESC) I will continue to next steps and decide if i need another MCU at a later time.
+7.3 Write necessary LCD functions for esp32 and check that they do work properly.
+
+TODO:
+
+
 8. Create custom circuitboard for transmitter for all pieces like joysticks, MCU, on/off button, switches etc.
 9. Create additional functions like a arming function, trims etc.
 10. (OPTIONAL) GPS functionality.

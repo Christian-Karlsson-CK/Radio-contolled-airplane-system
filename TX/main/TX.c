@@ -15,51 +15,12 @@ idf.py monitor -p COM3
 idf.py flash -p COM3 monitor
     builda & flasha till MCU, monitor är optional om man vill övervaka.
 */
-
-#include <stdio.h>
-#include "driver/gpio.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_log.h"
-#include "driver/adc.h"
-
-#include "driver/spi_common.h"
-#include "driver/spi_master.h"
-
-#include "NRF24L01.h"
-#include "lcd.h"
-#include "GPIO_PINS.h"
-
-#define SWITCH_TO_TX_COMMAND      255
-#define RECEIVED_ACKNOWLEDGMENT   123 
-
-void init_controls();
-
-void TransmitData(uint8_t *TxData, spi_device_handle_t *spi_device_handle);
-void ReadAllAnalog(uint8_t *TxData);
-
-uint8_t ReceiveData(spi_device_handle_t *spi_device_handle);
+#include "TX.h"
 
 static const char *TAG = "Debug:";
 
-typedef struct AnalogReadings
-{   
-    uint16_t throttle;
-    uint16_t rudder;
-    uint16_t ailerons;
-    uint16_t elevator;
-    uint8_t  switchRates;
-    uint8_t  switchArm;
-    uint8_t  potentiometerScreen;
-    uint8_t  potentiometerTrim;
-    uint8_t  switchBuzzer_RTH;
-    uint8_t  switchTrim;
-}AnalogReadings;
-
-
 void app_main(void)
-{
-    //Joystick
+{   
     init_controls();
     lcd_init();
 
@@ -67,6 +28,7 @@ void app_main(void)
     SPI_init(&spi_device_handle);
 
     uint8_t TxData[32];
+    uint8_t RxData[32]; 
 
     NRF24_Init(&spi_device_handle);
 
@@ -74,160 +36,107 @@ void app_main(void)
 
     //NRF24_RXMode(&spi_device_handle);
     
-    uint8_t TX_RX_Switch_counter = 0; //This counter is used to switch between RX and TX mode. TX mode sneds all analog stick and potentiometer values.
+    uint8_t TX_RX_Switch_counter = 0; //This counter is used to switch between RX and TX mode. TX mode sends all analog stick and potentiometer values.
                                       //RX mode is used to receive status data from the RX on the airplane, for instance Battery voltage. 
 
     while (true)
     {   
-        
         TX_RX_Switch_counter++;
-        if (TX_RX_Switch_counter < 125)
+
+        //NORMAL TX MODE TO SEND CONTROL DATA
+        if (TX_RX_Switch_counter < TX_TO_RX_THRESHOLD)
         {   
-            //NRF24_TXMode(&spi_device_handle);
             ReadAllAnalog(TxData);
-            TxData[6] = 0;
+            TxData[COMMAND_BYTE] = NO_COMMAND;
+
             TransmitData(TxData, &spi_device_handle);
             vTaskDelay(pdMS_TO_TICKS(10));
-            ESP_LOGI(TAG, "TX");
+
         }
-        else if (TX_RX_Switch_counter >= 125)
+
+        //SEND COMMAND TO MAKE RX(ON AIRPLANE SIDE) SWITCH TO TX MODE
+        else if (TX_RX_Switch_counter >= TX_TO_RX_THRESHOLD)
         {   
-            TxData[6] = SWITCH_TO_TX_COMMAND;
+            TxData[COMMAND_BYTE] = SWITCH_TO_TX_COMMAND;
             TransmitData(TxData, &spi_device_handle);
-            
 
             NRF24_RXMode(&spi_device_handle);
-            vTaskDelay(pdMS_TO_TICKS(10));
+            //vTaskDelay(pdMS_TO_TICKS(2));
             uint8_t tries = 0;
 
-            while (!ReceiveData(&spi_device_handle) && tries < 5)
+            //LISTEN FOR INCOMMING TRANSMISSION FROM TX (AIRPLANE SIDE) MAXIMUM 10 TRIES THEN BACK TO NORMAL TX MODE
+            while (!ReceiveData(&spi_device_handle, RxData) && tries < 5)
             {   
-                ESP_LOGI(TAG, "RX");
-                ESP_LOGI(TAG, "No message!");
-                vTaskDelay(pdMS_TO_TICKS(2));
+                ESP_LOGI(TAG, "NO MessageXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+                vTaskDelay(pdMS_TO_TICKS(0.7));
                 tries++;
             }
-            if (tries <= 5)
+            if (tries <= 9)
             {
-                ESP_LOGI(TAG, "RX");
-                ESP_LOGI(TAG, "Message!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                ESP_LOGI(TAG, "Message Received!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+                uint8_t whole = RxData[3];
+                uint8_t decimal = RxData[4];
+
+                lcd_set_cursor(0,0);
+                lcd_printf("%.2u.%.2uV", whole, decimal);
             }
             
             tries = 0;
             TX_RX_Switch_counter = 0;
-            //vTaskDelay(pdMS_TO_TICKS(10));
             NRF24_TXMode(&spi_device_handle);
         }
-        
-        
-        /*
-        NRF24_TXMode(&spi_device_handle);
-        ReadAllAnalog(TxData);
-        TxData[6] = SWITCH_TO_TX_COMMAND;
-        TransmitData(TxData, &spi_device_handle);
-        
-
-        NRF24_RXMode(&spi_device_handle);
-        while (!ReceiveData(&spi_device_handle))
-        {
-            ESP_LOGI(TAG, "No message!");
-            //vTaskDelay(pdMS_TO_TICKS(1000));    
-        }
-        ESP_LOGI(TAG, "We got message!");
-        //vTaskDelay(pdMS_TO_TICKS(10000));
-        */
-        
-
-        
     }
 }
 
 void init_controls(){
-    //Joystick
-    gpio_set_direction(PIN_RUDDER, GPIO_MODE_INPUT); //X axis
-    gpio_set_direction(PIN_THROTTLE, GPIO_MODE_INPUT); //Y axis
+    //Joysticks
+    gpio_set_direction(PIN_RUDDER, GPIO_MODE_INPUT);
+    gpio_set_direction(PIN_THROTTLE, GPIO_MODE_INPUT); 
+    gpio_set_direction(PIN_AILERONS, GPIO_MODE_INPUT);
+    gpio_set_direction(PIN_ELEVATOR, GPIO_MODE_INPUT);
 
     adc1_config_width(ADC_WIDTH_BIT_10); // Analog digital converter, 10bit = 0-1023
-    adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11); //I think this will improve edges on joystick
-    adc1_config_channel_atten(ADC1_CHANNEL_3, ADC_ATTEN_DB_11);
+    adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11); //Throttle
+    adc1_config_channel_atten(ADC1_CHANNEL_3, ADC_ATTEN_DB_11); //Rudder
 
-    //Switch
-    gpio_set_direction(PIN_NUM_SW_UP, GPIO_MODE_INPUT);
-    gpio_set_direction(PIN_NUM_SW_DOWN, GPIO_MODE_INPUT);
+    adc2_config_channel_atten(ADC2_CHANNEL_0, ADC_ATTEN_DB_11); //Ailerons
+    adc2_config_channel_atten(ADC2_CHANNEL_2, ADC_ATTEN_DB_11); //Elevator
+
+    //Switches
+    gpio_set_direction(PIN_SWITCH1_UP, GPIO_MODE_INPUT);
+    gpio_set_direction(PIN_SWITCH1_DOWN, GPIO_MODE_INPUT);
+    gpio_set_direction(PIN_SWITCH2_UP, GPIO_MODE_INPUT);
+    gpio_set_direction(PIN_SWITCH2_DOWN, GPIO_MODE_INPUT);
+
+    //Potentiometers
+    gpio_set_direction(PIN_POT1, GPIO_MODE_INPUT);
+    gpio_set_direction(PIN_POT2, GPIO_MODE_INPUT);
+
+    adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_11);   //POT1
+    adc2_config_channel_atten(ADC2_CHANNEL_4, ADC_ATTEN_DB_11);   //POT2
 }
 
 
 void TransmitData(uint8_t *TxData, spi_device_handle_t *spi_device_handle){
 
     if(NRF24_Transmit(TxData, spi_device_handle)){
-        ESP_LOGI(TAG, "SEEMS TO TRANSMIT");
+        //ESP_LOGI(TAG, "SEEMS TO TRANSMIT");
     }
-    nrf24_WriteRegister(STATUS, 32, spi_device_handle);
-    //vTaskDelay(pdMS_TO_TICKS(10));
+    nrf24_WriteRegister(STATUS, CLEAR_TX_DS, spi_device_handle);
 }
 
-uint8_t ReceiveData(spi_device_handle_t *spi_device_handle){
-    uint8_t RxData[32];
+uint8_t ReceiveData(spi_device_handle_t *spi_device_handle, uint8_t *RxData){
 
     if (NRF24_RXisDataReady(0, spi_device_handle) == 1)
     {   
-        ESP_LOGI(TAG, "We have data available!");
+        //ESP_LOGI(TAG, "We have data available!");
         NRF24_Receive(RxData, spi_device_handle);
 
-        //vTaskDelay(pdMS_TO_TICKS(3000));
-        uint8_t whole = RxData[3];
-        uint8_t decimal = RxData[4];
-
-        //uint8_t whole = 12;
-        //uint8_t decimal = 4;
-        
-        ESP_LOGI(TAG, "whole: %u, decimal: %u", whole, decimal);
-
-        
-        char buffer[6]; // Enough space for 5 digits plus null-terminator
-        snprintf(buffer, sizeof(buffer), "%u", whole); // Format the value as a string
-
-        char buffer1[6]; // Enough space for 5 digits plus null-terminator
-        snprintf(buffer1, sizeof(buffer1), "%u", decimal); // Format the value as a string
-    
-        if (whole < 10)
-        {   
-            ESP_LOGI(TAG, "whole < 10");
-            lcd_send_data('0');
-            lcd_send_data(buffer[0]);
-        }
-        else{
-            ESP_LOGI(TAG, "whole >= 10");
-            lcd_send_data(buffer[0]);
-            lcd_send_data(buffer[1]);
-        }
-
-        lcd_send_data('.');
-        
-        if (decimal < 10)
-        {
-            lcd_send_data('0');
-            lcd_send_data(buffer1[0]);
-        }
-        else{
-            lcd_send_data(buffer1[0]);
-            lcd_send_data(buffer1[1]);
-        }
-        lcd_send_data('V');
-    
-        //ESP_LOGI(TAG, "buffer:%c", buffer[0]);
-        //ESP_LOGI(TAG, "buffer:%c", buffer[1]);
-        //lcd_send_data(buffer[0]);
-        //lcd_send_data(buffer[1]);
-        //lcd_send_data('V');
-        //ESP_LOGI(TAG, "%.02u.%.02uV", whole, decimal);
-
-        //vTaskDelay(pdMS_TO_TICKS(3000));
         return 1;
     }
     else{
         ESP_LOGI(TAG, "NO MESSAGE :-(");
-        //vTaskDelay(pdMS_TO_TICKS(1));
         return 0;
     }
     
@@ -235,20 +144,53 @@ uint8_t ReceiveData(spi_device_handle_t *spi_device_handle){
 }
 
 void ReadAllAnalog(uint8_t *TxData){
-    uint16_t xReading = adc1_get_raw(ADC1_CHANNEL_0);
-        uint16_t yReading = adc1_get_raw(ADC1_CHANNEL_3);
-        //ESP_LOGI(TAG, "Y: %u, X:%u", yReading, xReading);
+    uint16_t rudder = adc1_get_raw(ADC1_CHANNEL_3);
+    uint16_t throttle = adc1_get_raw(ADC1_CHANNEL_0);
 
-        uint8_t switchUp = gpio_get_level(PIN_NUM_SW_UP);
-        uint8_t switchDown = gpio_get_level(PIN_NUM_SW_DOWN);
-        //ESP_LOGI(TAG, "UP: %u, DOWN: %u", switchUp, switchDown);
-    
-        TxData[2] = (uint8_t)(xReading & 0xFF);
-        TxData[3] = (uint8_t)(xReading >> 8);
-        TxData[4] = (uint8_t)(yReading & 0xFF);
-        TxData[5] = (uint8_t)(yReading >> 8);
+    uint16_t ailerons;
+    adc2_get_raw(ADC2_CHANNEL_0, ADC_WIDTH_BIT_10, &ailerons);
+    uint16_t elevator;
+    adc2_get_raw(ADC2_CHANNEL_2, ADC_WIDTH_BIT_10, &elevator);
 
-        //uint16_t receivedValueX = (uint16_t)((TxData[3] << 8) | TxData[2]);
-        //uint16_t receivedValueY = (uint16_t)((TxData[5] << 8) | TxData[4]);
-        //ESP_LOGI(TAG, "Y: %u, X:%u", receivedValueY, receivedValueX);
+    uint16_t pot1 = adc1_get_raw(ADC1_CHANNEL_4);
+    uint16_t pot2;
+    adc2_get_raw(ADC2_CHANNEL_4, ADC_WIDTH_BIT_10, &pot2);
+
+    uint8_t switch1Up = gpio_get_level(PIN_SWITCH1_UP);
+    uint8_t switch1Down = gpio_get_level(PIN_SWITCH1_DOWN);
+
+    uint8_t switch2Up = gpio_get_level(PIN_SWITCH2_UP);
+    uint8_t switch2Down = gpio_get_level(PIN_SWITCH2_DOWN);
+
+    TxData[2] = (uint8_t)(rudder & 0xFF);
+    TxData[3] = (uint8_t)(rudder >> 8);
+    TxData[4] = (uint8_t)(throttle & 0xFF);
+    TxData[5] = (uint8_t)(throttle >> 8);
+    TxData[6] = (uint8_t)(ailerons & 0xFF);
+    TxData[7] = (uint8_t)(ailerons >> 8);
+    TxData[8] = (uint8_t)(elevator & 0xFF);
+    TxData[9] = (uint8_t)(elevator >> 8);
+    TxData[10] = (uint8_t)(pot1 & 0xFF);
+    TxData[11] = (uint8_t)(pot1 >> 8);
+    TxData[12] = (uint8_t)(pot2 & 0xFF);
+    TxData[13] = (uint8_t)(pot2 >> 8);
+    TxData[14] = switch1Up;
+    TxData[15] = switch1Down;
+    TxData[16] = switch2Up;
+    TxData[17] = switch2Down;
+
+    /*
+    uint16_t rudderT = (uint16_t)((TxData[3] << 8) | TxData[2]);
+    uint16_t throttleT = (uint16_t)((TxData[5] << 8) | TxData[4]);
+    uint16_t aileronsT = (uint16_t)((TxData[7] << 8) | TxData[6]);
+    uint16_t elevatorT = (uint16_t)((TxData[9] << 8) | TxData[8]);
+    uint16_t pot1T = (uint16_t)((TxData[11] << 8) | TxData[10]);
+    uint16_t pot2T = (uint16_t)((TxData[13] << 8) | TxData[12]);
+
+    ESP_LOGI(TAG, "rudder: %u, throttle: %u", rudderT, throttleT);
+    ESP_LOGI(TAG, "ailerons: %u, elevator: %u", aileronsT, elevatorT);
+    ESP_LOGI(TAG, "Pot1: %u, Pot2: %u", pot1T, pot2T);
+    ESP_LOGI(TAG, "sw1Up: %u, sw1Down: %u", TxData[14], TxData[15]);
+    ESP_LOGI(TAG, "sw2Up: %u, sw2Down: %u", TxData[16], TxData[17]);
+    */
 }

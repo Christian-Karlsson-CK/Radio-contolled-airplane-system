@@ -1,6 +1,11 @@
 #ifndef _LCD_H_
 #define _LCD_H_
 
+#include <stdint.h>
+
+#define LCD_COL_COUNT 16
+#define LCD_ROW_COUNT 2
+
 // commands
 #define LCD_CLEARDISPLAY 0x01
 #define LCD_RETURNHOME 0x02
@@ -50,6 +55,13 @@ void lcd_send_command(uint8_t command);
 void lcd_send_data(uint8_t data);
 
 void lcd_init();
+
+void lcd_set_cursor(uint8_t col, uint8_t row);
+
+void lcd_clear(void);
+
+void lcd_puts(char *string);
+void lcd_printf(char *format, ...);
 
 #endif /* _LCD_H_ */
 

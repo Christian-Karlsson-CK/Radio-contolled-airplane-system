@@ -103,6 +103,9 @@ void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle)
 /*Fifo status*/
 #define TX_EMPTY      0x04
 
+/**/
+#define CLEAR_TX_DS   32
+
 #endif /* _NRF24L01_H_ */
 
 

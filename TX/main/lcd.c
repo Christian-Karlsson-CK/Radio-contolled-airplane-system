@@ -1,3 +1,5 @@
+#include "lcd.h"
+//#include <stdint.h>
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -7,7 +9,7 @@
 
 #include "GPIO_PINS.h"
 
-
+static char lcd_buffer[LCD_COL_COUNT + 1];
 
 
 static const char *TAG = "Debug:";
@@ -39,6 +41,7 @@ void lcd_init_gpio() {
     gpio_set_level(LCD_D4_PIN, 0);
     //gpio_set_direction(LCD_D5_PIN, GPIO_MODE_OUTPUT);
     //gpio_set_level(LCD_D5_PIN, 0);
+    gpio_reset_pin(LCD_D6_PIN);
     gpio_set_direction(LCD_D6_PIN, GPIO_MODE_OUTPUT);
     gpio_set_level(LCD_D6_PIN, 0);
     gpio_reset_pin(LCD_D7_PIN);
@@ -80,7 +83,7 @@ void lcd_send_nibble(uint8_t nibble) {
 
 void lcd_send_command(uint8_t command) {
     gpio_set_level(LCD_RS_PIN, 0); // RS = 0 (command mode)
-    vTaskDelay(pdMS_TO_TICKS(10));
+    //vTaskDelay(pdMS_TO_TICKS(10));
     lcd_send_nibble(command >> 4);
     lcd_send_nibble(command);
     
@@ -94,6 +97,33 @@ void lcd_send_data(uint8_t data) {
     lcd_send_nibble(data);
     
     vTaskDelay(pdMS_TO_TICKS(0.3)); // Delay after sending data
+}
+
+void lcd_set_cursor(uint8_t col, uint8_t row) {
+  static uint8_t offsets[] = { 0x00, 0x40, 0x14, 0x54 };
+
+  lcd_send_command(LCD_SETDDRAMADDR | (col + offsets[row]));
+}
+
+void lcd_clear(void) {
+  lcd_send_command(LCD_CLEARDISPLAY);
+  vTaskDelay(pdMS_TO_TICKS(2));
+}
+
+void lcd_puts(char *string) {
+    for (char *it = string; *it; it++) {
+        lcd_send_data(*it);
+    }
+}
+
+void lcd_printf(char *format, ...) {
+  va_list args;
+
+  va_start(args, format);
+  vsnprintf(lcd_buffer, LCD_COL_COUNT + 1, format, args);
+  va_end(args);
+
+  lcd_puts(lcd_buffer);
 }
 
 void lcd_init() {

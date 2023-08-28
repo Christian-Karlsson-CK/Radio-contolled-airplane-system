@@ -288,7 +288,7 @@ uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t *spi_device_handle)
 
     CS_Unselect();
 
-    vTaskDelay(pdMS_TO_TICKS(10)); //Delay for the pin to settle
+    vTaskDelay(pdMS_TO_TICKS(5)); //Delay for the pin to settle
 
     uint8_t fifoStatus = NRF24_ReadReg(FIFO_STATUS, spi_device_handle); //Read fifo status to see if LRF24L01 properly received transmission.
                                                                         //FIFO = first-in-first-out
