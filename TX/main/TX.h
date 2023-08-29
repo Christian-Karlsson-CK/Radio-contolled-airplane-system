@@ -33,7 +33,7 @@ typedef struct AnalogReadings
     uint8_t  potentiometer2;
 }AnalogReadings;
 
-void init_controls();
+void InitControls();
 
 void TransmitData(uint8_t *TxData, spi_device_handle_t *spi_device_handle);
 void ReadAllAnalog(uint8_t *TxData);

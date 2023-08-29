@@ -1,6 +1,23 @@
 #ifndef _NRF24L01_H_
 #define _NRF24L01_H_
 
+#include <string.h>
+#include <stdio.h>
+#include <avr/io.h>
+
+#include "uart.h"
+
+#include "NRF24L01.h"
+#include "UnoR3Pins.h"
+
+#include "lcd.h"
+#include <util/delay.h>
+
+#define BIT_SET(a, b) ((a) |= (1ULL << (b)))
+#define BIT_CLEAR(a,b) ((a) &= ~(1ULL<<(b)))
+#define BIT_FLIP(a,b) ((a) ^= (1ULL<<(b)))
+#define BIT_CHECK(a,b) (!!((a) & (1ULL<<(b))))
+
 //Common
 void SPI_init();
 
@@ -9,13 +26,13 @@ void CS_Unselect();
 void CE_Enable();
 void CE_Disable();
 
-void nrf24_WriteRegister(uint8_t register, uint8_t registerData);
-void nrf24_WriteRegisterMulti(uint8_t startRegister, uint8_t* registerData, int);
+void NRF24_WriteRegister(uint8_t register, uint8_t registerData);
+void NRF24_WriteRegisterMulti(uint8_t startRegister, uint8_t* registerData, int);
 
 uint8_t NRF24_ReadReg(uint8_t register);
-void ReadRegMulti(uint8_t startRegister, uint8_t* registerData, int registerDataSize);
+void NFR24_ReadRegMulti(uint8_t startRegister, uint8_t* registerData, int registerDataSize);
 
-void nrfsendCmd (uint8_t cmd);
+void NRF24_SendCmd (uint8_t cmd);
 
 void NRF24_Init();
 
@@ -27,18 +44,6 @@ uint8_t NRF24_Transmit(uint8_t *payload, int numberofBytes);
 void NRF24_RXMode();
 uint8_t NRF24_RXisDataReady(int pipeNum);
 void NRF24_Receive(uint8_t *dataStorage);
-
-
-//void NRF24_Init (void);
-
-//void NRF24_TxMode (uint8_t *Address, uint8_t channel);
-//uint8_t NRF24_Transmit (uint8_t *data);
-
-//void NRF24_RxMode (uint8_t *Address, uint8_t channel);
-//uint8_t isDataAvailable (int pipenum);
-//void NRF24_Receive (uint8_t *data);
-
-//void NRF24_ReadAll (uint8_t *data);
 
 /* Memory Map */
 #define CONFIG      0x00
@@ -92,10 +97,11 @@ void NRF24_Receive(uint8_t *dataStorage);
 #define PRIM_RX       0x00
 
 /*Status register*/
-#define RX_P_NO       0x01 
-#define MAX_RT        0x04
-#define TX_DS         0x05
 #define RX_DR         0x06
+#define TX_DS         0x05
+#define MAX_RT        0x04
+#define RX_P_NO       0x01//USES 3 BITS 0x01 - 0x03
+#define TX_FULL       0x00
 
 /*Fifo status*/
 #define TX_EMPTY      0x04

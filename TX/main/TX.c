@@ -21,7 +21,7 @@ static const char *TAG = "Debug:";
 
 void app_main(void)
 {   
-    init_controls();
+    InitControls();
     lcd_init();
 
     spi_device_handle_t spi_device_handle; //SPI handle for the SPI communication to NRF24L01+
@@ -71,7 +71,7 @@ void app_main(void)
                 vTaskDelay(pdMS_TO_TICKS(0.7));
                 tries++;
             }
-            if (tries <= 9)
+            if (tries <= 5)
             {
                 ESP_LOGI(TAG, "Message Received!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
@@ -89,7 +89,7 @@ void app_main(void)
     }
 }
 
-void init_controls(){
+void InitControls(){
     //Joysticks
     gpio_set_direction(PIN_RUDDER, GPIO_MODE_INPUT);
     gpio_set_direction(PIN_THROTTLE, GPIO_MODE_INPUT); 
@@ -123,7 +123,7 @@ void TransmitData(uint8_t *TxData, spi_device_handle_t *spi_device_handle){
     if(NRF24_Transmit(TxData, spi_device_handle)){
         //ESP_LOGI(TAG, "SEEMS TO TRANSMIT");
     }
-    nrf24_WriteRegister(STATUS, CLEAR_TX_DS, spi_device_handle);
+    NRF24_WriteRegister(STATUS, CLEAR_TX_DS, spi_device_handle);
 }
 
 uint8_t ReceiveData(spi_device_handle_t *spi_device_handle, uint8_t *RxData){

@@ -1,25 +1,11 @@
 
 //https://www.youtube.com/watch?v=mB7LsiscM78&list=PLfIJKC1ud8giTKW0nzHN71hud_238d-JO&index=10
 
-#include <string.h>
-#include <stdio.h>
-#include <avr/io.h>
-
-#include "uart.h"
+//PWR UP/PWRDOWN DELAY 2MS
+//TX MODE = CE HIGH FOR 10 MICROSECONDS
+//CE positive edge to csn low 4microseconds
 
 #include "NRF24L01.h"
-#include "UnoR3Pins.h"
-
-#include "lcd.h"
-#include <util/delay.h>
-
-//#include "freertos/FreeRTOS.h"
-//#include "freertos/task.h"
-
-#define BIT_SET(a, b) ((a) |= (1ULL << (b)))
-#define BIT_CLEAR(a,b) ((a) &= ~(1ULL<<(b)))
-#define BIT_FLIP(a,b) ((a) ^= (1ULL<<(b)))
-#define BIT_CHECK(a,b) (!!((a) & (1ULL<<(b))))
 
 //-------------------Common Methods for both RX and TX-------------------
 
@@ -75,15 +61,15 @@ void CE_Disable(){
     BIT_CLEAR(PORTB, PIN_NUM_CE);
 }
 
-void nrf24_WriteRegister(uint8_t reg, uint8_t data){//This method is used to write to a specific register, the NRF24L01 has registers to configure different settings for the NRF24L01.
+void NRF24_WriteRegister(uint8_t reg, uint8_t data){//This method is used to write to a specific register, the NRF24L01 has registers to configure different settings for the NRF24L01.
 
     reg = reg|1<<5; //In datasheet w_register says fifth bit needs to be a 1.
     CS_Select();
 
-    /* Start transmission */
+    // Start transmission
     SPDR = reg;
 
-    /* Wait for transmission complete */
+    //Wait for transmission complete
     while(!(SPSR & (1<<SPIF)));
     //loop_until_bit_is_set(SPSR, SPIF);
 
@@ -96,7 +82,7 @@ void nrf24_WriteRegister(uint8_t reg, uint8_t data){//This method is used to wri
     CS_Unselect();
 }
 
-void nrf24_WriteRegisterMulti(uint8_t reg, uint8_t *data, int numberofBytes){//This method is used to write to s specific register, the NRF24L01 has registers to configure different settings for the NRF24L01.
+void NRF24_WriteRegisterMulti(uint8_t reg, uint8_t *data, int numberofBytes){
     
     reg = reg|1<<5;
 
@@ -143,7 +129,7 @@ uint8_t NRF24_ReadReg(const uint8_t reg){
     return SPDR; //After reg has been sent to the NRF24, NRF24 will send the reg status
 }
 
-void ReadRegMulti(uint8_t reg, uint8_t *data, int numberofBytes){
+void NFR24_ReadRegMulti(uint8_t reg, uint8_t *data, int numberofBytes){
 
     CS_Select();
 
@@ -164,7 +150,7 @@ void ReadRegMulti(uint8_t reg, uint8_t *data, int numberofBytes){
     CS_Unselect();
 }
 
-void nrfsendCmd (uint8_t cmd)
+void NRF24_SendCmd (uint8_t cmd)
 {   
 	// Pull the CS Pin LOW to select the device
 	CS_Select();
@@ -181,27 +167,27 @@ void NRF24_Init(){
     uint8_t RxAddress[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA}; //40bits
     uint8_t TxAddress[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE};
 
-    nrf24_WriteRegister(CONFIG, 0); //Will be configured later.
+    NRF24_WriteRegister(CONFIG, 0); //Will be configured later.
 
-    nrf24_WriteRegister(EN_AA, 0); //No auto-Acknowledgment
+    NRF24_WriteRegister(EN_AA, 0); //No auto-Acknowledgment
 
-    nrf24_WriteRegister(SETUP_AW, 0x03);
+    NRF24_WriteRegister(SETUP_AW, 0x03);
 
-    nrf24_WriteRegister(SETUP_RETR, 0); //Retransimssion disabled
+    NRF24_WriteRegister(SETUP_RETR, 0); //Retransimssion disabled
 
-    nrf24_WriteRegister(RF_CH, 0);
+    NRF24_WriteRegister(RF_CH, 0);
 
-    nrf24_WriteRegister(RF_SETUP, 0x0E); //Power = 0dbm,  data rate = 2mbps
+    NRF24_WriteRegister(RF_SETUP, 0x0E); //Power = 0dbm,  data rate = 2mbps
 
-    nrf24_WriteRegister(RF_CH, 55); //choose a channel
+    NRF24_WriteRegister(RF_CH, 55); //choose a channel
     
-    nrf24_WriteRegister(EN_RXADDR, 1);
+    NRF24_WriteRegister(EN_RXADDR, 1);
 
-    nrf24_WriteRegisterMulti(RX_ADDR_P0, RxAddress, 5); // Write the RX address
+    NRF24_WriteRegisterMulti(RX_ADDR_P0, RxAddress, 5); // Write the RX address
 
-    nrf24_WriteRegister(RX_PW_P0, 32); /// 32 bit payload size for pipe 0
+    NRF24_WriteRegister(RX_PW_P0, 32); /// 32 bit payload size for pipe 0
 
-    nrf24_WriteRegisterMulti(TX_ADDR, TxAddress, 5); // Write the TX address
+    NRF24_WriteRegisterMulti(TX_ADDR, TxAddress, 5); // Write the TX address
 
 }
 
@@ -216,16 +202,14 @@ void NRF24_TXMode(){
     //Power down change do appropriate changes in config register then powr up the NRF24L01 set in TX mode.
     uint8_t config = NRF24_ReadReg(CONFIG); //Read the current settings.
     config = config | (0<<PWR_UP); //Power down before changing registers.
-    nrf24_WriteRegister(CONFIG, config);//Then write it to NRF
+    NRF24_WriteRegister(CONFIG, config);//Then write it to NRF
     config = (1<<MASK_RX_DR) | 
              (1<<MASK_TX_DS) |
              (1<<MASK_MAX_RT) | 
              (1<<PWR_UP) | 
              (0<<PRIM_RX);  // Power up in RXmode
-    //lcd_set_cursor(7,0);
-    //lcd_printf("%u", config);                
-    //config = 114;//TEST
-    nrf24_WriteRegister(CONFIG, config); //Then write it to NRF
+
+    NRF24_WriteRegister(CONFIG, config); //Then write it to NRF
 
     _delay_ms(2);
     CE_Enable();
@@ -235,8 +219,6 @@ void NRF24_TXMode(){
 uint8_t NRF24_Transmit(uint8_t *payload, int numberofBytes){
     
     uint8_t cmdToSend = W_TX_PAYLOAD; //this command tells the LRF24L01 that following this a payload will be sent.
-
-    //uint8_t buffer[33];
 
     CS_Select();
 
@@ -253,20 +235,10 @@ uint8_t NRF24_Transmit(uint8_t *payload, int numberofBytes){
     _delay_ms(0.3);
 
     uint8_t fifoStatus = NRF24_ReadReg(FIFO_STATUS); //Read fifo status to see if LRF24L01 properly received transmission.
-    //lcd_set_cursor(0,0);
-    //lcd_printf("%u", fifoStatus);
-    //lcd_printf("%u", payload[2]);
-    //lcd_set_cursor(6,0);
-    //lcd_printf("%u", payload[3]);
-    //lcd_set_cursor(9,0);
-    //lcd_printf("%u", payload[4]);
-    //lcd_set_cursor(12,0);
-    //lcd_printf("%u", payload[5]);
-    //_delay_ms(20);
     
     if((fifoStatus & (1<<TX_EMPTY)) && (!(fifoStatus & (1<<3)))){ //3 is a reserved bit but checking it too see that NRF is in correct status also.
         cmdToSend = FLUSH_TX;
-        nrfsendCmd(cmdToSend);
+        NRF24_SendCmd(cmdToSend);
         return 1;
     }
     return 0;
@@ -283,15 +255,15 @@ void NRF24_RXMode(){ //put the NRF24L01 in TXMode
     //Power up the NRF24L01 and set to RX mode
     uint8_t config = NRF24_ReadReg(CONFIG); //Read the current settings.
     config = config | (0<<PWR_UP); //Power down before changing registers.
-    nrf24_WriteRegister(CONFIG, config);//Then write it to NRF
-    //config = config | (1<<PWR_UP) | (1<<PRIM_RX);  // Power up in RXmode
+    NRF24_WriteRegister(CONFIG, config);//Then write it to NRF
+
     config = (1<<MASK_RX_DR) | 
              (1<<MASK_TX_DS) |
              (1<<MASK_MAX_RT) | 
              (1<<PWR_UP) | 
              (1<<PRIM_RX);  // Power up in RXmode
-    //config = 3;//TEST
-    nrf24_WriteRegister(CONFIG, config); //Then write it to NRF
+
+    NRF24_WriteRegister(CONFIG, config); //Then write it to NRF
 
     _delay_ms(2);
     CE_Enable();
@@ -335,7 +307,7 @@ void NRF24_Receive(uint8_t *dataStorage){
     _delay_ms(1); //Delay for the pin to settle
     
     cmdToSend = FLUSH_RX;
-    nrfsendCmd(cmdToSend);
+    NRF24_SendCmd(cmdToSend);
 }
 
 

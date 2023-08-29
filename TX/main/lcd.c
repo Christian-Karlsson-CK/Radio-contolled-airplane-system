@@ -72,18 +72,13 @@ void lcd_send_nibble(uint8_t nibble) {
     gpio_set_level(LCD_D5_PIN, (nibble >> 1) & 0x01);
     gpio_set_level(LCD_D6_PIN, (nibble >> 2) & 0x01);
     gpio_set_level(LCD_D7_PIN, (nibble >> 3) & 0x01);
-    //ESP_LOGI(TAG, "D7%u: ", (nibble >> 3) & 0x01);
-    //ESP_LOGI(TAG, "D6%u: ", (nibble >> 2) & 0x01);
-    //ESP_LOGI(TAG, "D5%u: ", (nibble >> 1) & 0x01);
-    //ESP_LOGI(TAG, "D4%u: ", (nibble >> 0) & 0x01);
-    //vTaskDelay(pdMS_TO_TICKS(1));//TEST
 
     lcd_pulse_enable();
 }
 
 void lcd_send_command(uint8_t command) {
     gpio_set_level(LCD_RS_PIN, 0); // RS = 0 (command mode)
-    //vTaskDelay(pdMS_TO_TICKS(10));
+
     lcd_send_nibble(command >> 4);
     lcd_send_nibble(command);
     
@@ -92,7 +87,7 @@ void lcd_send_command(uint8_t command) {
 
 void lcd_send_data(uint8_t data) {
     gpio_set_level(LCD_RS_PIN, 1); // RS = 1 (data mode)
-    //vTaskDelay(pdMS_TO_TICKS(1));//10
+
     lcd_send_nibble(data >> 4);
     lcd_send_nibble(data);
     
@@ -139,13 +134,9 @@ void lcd_init() {
     //gpio_set_level(LCD_D6_PIN, 1);
     gpio_set_level(LCD_D7_PIN, 0);
     vTaskDelay(pdMS_TO_TICKS(4.1));
-    //ESP_LOGI(TAG, "ALL ZERO");
-    //vTaskDelay(pdMS_TO_TICKS(1000000));
-    //PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[13], PIN_FUNC_GPIO);
+
     lcd_send_nibble(0x03);
     vTaskDelay(pdMS_TO_TICKS(4.1));
-    ESP_LOGI(TAG, "nibble1");
-    //vTaskDelay(pdMS_TO_TICKS(1000000));
 
     lcd_send_nibble(0x03);
     vTaskDelay(pdMS_TO_TICKS(4.1));
@@ -156,7 +147,6 @@ void lcd_init() {
     lcd_send_nibble(0x02); // 4-bit mode
     vTaskDelay(pdMS_TO_TICKS(4.1));
 
-    ESP_LOGI(TAG, "COMMANDS:");
     lcd_send_command(40);
     vTaskDelay(pdMS_TO_TICKS(4.1));
     
@@ -165,12 +155,8 @@ void lcd_init() {
     
     lcd_send_command(40);
     vTaskDelay(pdMS_TO_TICKS(4.1));
-
-    ESP_LOGI(TAG, "3x 40 done: ");
     
-    //lcd_send_command(32); //1line
-    //vTaskDelay(pdMS_TO_TICKS(4.1));
-    ESP_LOGI(TAG, "dispay off: ");
+    ESP_LOGI(TAG, "dispay off: ");           //removing any of the esp_logi lines will result in nonfunctional lcd????
     lcd_send_command(8); //    Display off
     vTaskDelay(pdMS_TO_TICKS(4.1));
     ESP_LOGI(TAG, "clear: ");
@@ -185,7 +171,4 @@ void lcd_init() {
     ESP_LOGI(TAG, "display on: ");
     lcd_send_command(12);
     vTaskDelay(pdMS_TO_TICKS(2));
-    //lcd_send_command(0x01);
-
-
 }

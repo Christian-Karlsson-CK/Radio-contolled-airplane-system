@@ -1,7 +1,18 @@
 #ifndef _NRF24L01_H_
 #define _NRF24L01_H_
 
+#include <string.h>
+#include <stdio.h>
+
+#include "driver/spi_common.h"
+#include "driver/gpio.h"
 #include "driver/spi_master.h"
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+#include "NRF24L01.h"
+#include "GPIO_PINS.h"
 
 //Common
 void SPI_init(spi_device_handle_t *spi_handle);
@@ -11,13 +22,13 @@ void CS_Unselect();
 void CE_Enable();
 void CE_Disable();
 
-void nrf24_WriteRegister(uint8_t, uint8_t, spi_device_handle_t*);
-void nrf24_WriteRegisterMulti(uint8_t, uint8_t*, spi_device_handle_t*, int);
+void NRF24_WriteRegister(uint8_t, uint8_t, spi_device_handle_t*);
+void NRF24_WriteRegisterMulti(uint8_t, uint8_t*, spi_device_handle_t*, int);
 
 uint8_t NRF24_ReadReg(uint8_t reg, spi_device_handle_t *spi_device_handle);
-void ReadRegMulti(uint8_t, uint8_t*, int, spi_device_handle_t*);
+void NRF24_ReadRegMulti(uint8_t, uint8_t*, int, spi_device_handle_t*);
 
-void nrfsendCmd (uint8_t, spi_device_handle_t*);
+void NRF24_SendCmd (uint8_t, spi_device_handle_t*);
 
 void NRF24_Init(spi_device_handle_t*spi_device_handle);
 
@@ -29,18 +40,6 @@ uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t* spi_handle);
 void NRF24_RXMode(spi_device_handle_t *spi_device_handle);
 uint8_t NRF24_RXisDataReady(int pipeNum ,spi_device_handle_t *spi_device_handle);
 void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle);
-
-
-//void NRF24_Init (void);
-
-//void NRF24_TxMode (uint8_t *Address, uint8_t channel);
-//uint8_t NRF24_Transmit (uint8_t *data);
-
-//void NRF24_RxMode (uint8_t *Address, uint8_t channel);
-//uint8_t isDataAvailable (int pipenum);
-//void NRF24_Receive (uint8_t *data);
-
-//void NRF24_ReadAll (uint8_t *data);
 
 /* Memory Map */
 #define CONFIG      0x00
@@ -95,10 +94,12 @@ void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle)
 #define PRIM_RX       0x00
 
 /*Status register*/
-#define RX_P_NO       0x01 
-#define MAX_RT        0x04
-#define TX_DS         0x05
+
 #define RX_DR         0x06
+#define TX_DS         0x05
+#define MAX_RT        0x04
+#define RX_P_NO       0x01//USES 3 BITS 0x01 - 0x03
+#define TX_FULL       0x00
 
 /*Fifo status*/
 #define TX_EMPTY      0x04
