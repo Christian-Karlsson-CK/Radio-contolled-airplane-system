@@ -1,65 +1,59 @@
 # Radio controlled airplane system
 Embedded C
 
-The following text is my process of how I test, learn and try to develop a fully functional radio controlled RC airplane system.
-I'm going to use the ESP32 as the Transmitter(TX) and Elegoo UNO R3 as the Receiver(RX) using two NRF24L01 transceivers.
+The following text outlines my approach to testing, learning, and developing a fully functional radio controlled RC airplane system.
+I will employ the ESP32 as the transmitter (TX) and the Elegoo UNO R3 as the receiver (RX), utilizing a pair of NRF24L01 transceivers.
 
-Following list is all the electronic components:
+**Electronic Components:**
 
-PARTS:
--1 Elegoo UNO R3
--1 ESP32-­WROOM-­32 devkitC v4
--1 ESC + motor
--2x NRF24L01 transceiver
--2x Servo aileron
--1 Servo elevator
--1 Servo rudder
--2x Joysticks
--1 On/Off switch/button for transmitter
+Elegoo UNO R3  
+ESP32-WROOM-32 DevkitC v4  
+ESC + Motor  
+2x NRF24L01+ Transceivers  
+2x Servo Ailerons  
+1x Servo Elevator  
+1x Servo Rudder  
+2x Joysticks  
+1x On/Off Switch/Button for Transmitter  
 
-A few learning steps I have taken is to test that I can make joystick and servo work as intended on the Elegoo UNO R3.
-Then figuring out how I even get started on the programming of a ESP32 as it does not use AVR. I found that it uses the Espressif IDF framework instead. I created a simple led blink program to get knowledge of how to program the pins on the ESP32.
+In the initial stages of my project, I began by testing the functionality of joysticks and servos on the Elegoo UNO R3 to ensure they operated as intended. As I transitioned to working with the ESP32, I encountered the need to adapt to a different programming environment, as the ESP32 doesn't utilize AVR like the UNO. Instead, it relies on the Espressif IDF framework. To gain familiarity with the ESP32's pin programming, I initiated my learning journey by creating a simple LED blink program.
 
-I have written a rough TODO list for the workflow I intend to follow, the list will be subject to change as I learn more of what I need to do to or if more functionality is added.
-The list will be separated into 2 sections. A DONE section and a TODO section.
+I've drafted an initial TODO list for my workflow, with the understanding that it will evolve as I gain a deeper understanding of the project requirements and potentially add more functionality. The list is divided into two sections: one for completed tasks (DONE) and another for tasks yet to be tackled (TODO).
 
-DONE:
-1. Make the joystick work and get its analog input into the ESP32.(Testing purposes)
-3. Write/find a library for the NRF24L01 transceiver for ESP32.
-3.1 Test that registers is properly read and written to.(ESP32) (This took way too many hours to get working) 
-3.2 Test that the SPI transmitting part to the LRF24L01 is working properly (ESP32)
-3.3 Rewrite the library to work with a AVR MCU.
-3.4 Test that i can read/write to registers for an AVR MCU.
-3.5 Test that the SPI transmitting part to the LRF24L01 is working properly for the AVR MCU.
-4. Test that I can send a message from TX to RX MCUs using the NRF24L01 transceiver.
-4.1 Message received sometimes on startup. Try to make it work everytime and as expected.
-5. Properly send joystick input from TX to RX using NRF24L01 transceiver, RX then move a servo as intended.
-5.1 Create a voltage divider with resistors so that i can read battery voltage into the AVR MCU. Battery = 3cell LIPO ~9.9V = Empty, ~12.8V = full.
-5.2 Send data from AVR to ESP32 with battery voltage.
-5.3 Display voltage on LCD screen. (This included changing a LCD lib from AVR to work in IDF)
-5.4 Make TX and RX switch between TX and RX mode to both send and receive data in a controlled manner. (mostly controlled, small servo fluctuations)
-6. From the ESP32 test ESC and make it work with the motor.
-7. Send joystick input from TX to RX for ESC control.
-7.1 Connect all buttons, switches, joysticks and everything else needed to test that the whole system functions as expected.
-7.2 Test whole system on an airplane and confirm that everything works as expected. (All analog control data is received properly to RX but, atmega328p seems not be able to control more than 2 servo/ESC) I will continue to next steps and decide if i need another MCU at a later time.
-7.3 Write necessary LCD functions for esp32 and check that they do work properly.
+**DONE:**  
+1. Successfully configured and tested the joystick's analog input with the ESP32 (for testing purposes).  
+2. ~~Test servo on ESP32.~~ I initially attempted to test the servo on the ESP32, but it proved to be more challenging than expected and ultimately deemed unnecessary, so I skipped this step.  
+3. Wrote a library for the NRF24L01 transceiver for ESP32.  
+3.1 3.1 Invested significant time in ensuring proper register read/write functionality (ESP32).  
+3.2 Verified the SPI transmission to the NRF24L01 was functioning correctly (ESP32).  
+3.3 Adapted the NRF24L01 library for compatibility with an AVR MCU.  
+3.4 Confirmed register read/write operations with the AVR MCU.  
+3.5 Verified proper SPI transmission to the NRF24L01 for the AVR MCU.  
+4. Established communication between the TX and RX MCUs using the NRF24L01 transceiver.  
+4.1 Addressed sporadic message reception on RX to ensure consistent and expected performance.    
+5. Properly sent joystick input from TX to RX using NRF24L01 transceiver, RX then move a servo as intended.  
+5.1 Created a voltage divider with resistors to monitor battery voltage. (3-cell LIPO: ~9.9V = empty, ~12.8V = full)  
+5.2 Transmitted battery voltage data from AVR to ESP32.  
+5.3 Display voltage on LCD screen on from the ESP32. (This included changing a LCD lib from AVR to work in IDF environment)  
+5.4 Enable TX and RX to switch between TX and RX mode to both send and receive data in a controlled manner. (mostly controlled, small servo fluctuations)  
+6. Using the ESP32 test that ESC and motor works as intended.  
+7. Transmitted joystick input from TX to RX for ESC control.  
+7.1 Connected all buttons, switches, joysticks and everything else needed to test that the whole system functions as expected.  
+7.2 Test complete system on an airplane and confirmed that everything works as expected. (All analog control data is received properly to RX but, atmega328p seems not be able to control more than 2 servo/ESC) I will continue to next steps and decide if i need another MCU at a later time.  
+7.3 Wrote necessary LCD functions for esp32 and confirmed that they do work properly.  
 
-TODO:
+**TODO:**  
 
+8. Design a custom circuit board for the transmitter, accommodating components such as joysticks, MCU, on/off button, switches, and more.  
+9. Implement additional functions like a arming function, trims, buzzer etc.  
+10. (OPTIONAL) Explore the integration of GPS functionality into the system.
 
-8. Create custom circuitboard for transmitter for all pieces like joysticks, MCU, on/off button, switches etc.
-9. Create additional functions like a arming function, trims etc.
-10. (OPTIONAL) GPS functionality.
+**MAIN PROBLEMS:**  
 
-PROBLEMS:
+Initially, when pulling the joystick's y-axis to the top, both the x and y-axis readings showed 1023 instead of the expected ~512. This issue was resolved by adjusting the joystick voltage from 5V to 3.3V since the ADC cannot read up to 5V.
 
-If the joystick y axis is pulled to the top reading 4095, x axis also reads 4095?? Should be ~2650. SOLVED: joystick voltage should not be 5V but use the 3.3v instead as the ADC can not read up to 5V.
+Similarly, when pulling the joystick's x-axis to the right, both the x and y-axis readings displayed 1023 instead of the expected ~512. This was also addressed by using 3.3V for the joystick voltage.
 
-If the joystick x axis is pulled to the right reading 4095, y axis also reads 4095?? Should be ~2650.SOLVED: joystick voltage should not be 5V but use the 3.3v instead as the ADC can not read up to 5V.
+The GPIO 13 on the ESP32 was initially JTAG configured, requiring a reset to function as a normal GPIO. Configuring it as an output and setting it to logical HIGH resulted in a reading of ~2.84 volts with a multimeter, causing issues with the LCD. This problem was only identified after extensive troubleshooting including the use of a multimeter, which included accidentally damaging one ESP32 module.
 
-GPIO 13 on the esp32 is JTAG configured. It needs a reset to function as a normal GPIO. Configuring as output and setting logical HIGH will give a reading of ~2.84Volts with multimeter if not reset. No wonder the LCD didnt work. Took atleast 10hours to find out and 1 esp32 wasted by shorting it with the multimeter :-( .
-
-Learnings:
-Clock frequenzy on the SPI communication needs to be set to the same value for both the Atmega328p and ESP32.
-
-A big problem that I did not know about is that the NRF24L01 will always send back the FIFO_STATUS register first on every new command from the SPI transmitted to it. When the FIFO_STATUS is empty and it will be return a decimal value of 14. It took many hours to find out this.
+A significant challenge encountered was that the NRF24L01 always returns the FIFO_STATUS register first with every new command though the SPI. When the FIFO_STATUS is empty, it returns a decimal value of 14. Identifying and understanding this behavior required a substantial amount of time and effort.
