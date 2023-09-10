@@ -1,44 +1,64 @@
 #include "RX.h"
 
+uint8_t TxData[32];
+
 int main()
 {   
     //volatile millis_t milliSecsSinceLastCheck = 0;
 
+    init_RX();
+
     init_servo();
-    //init_serial();
-    millis_init();
-    sei();
+    //init_uart();
+    //millis_init();
+    sei(); // Enable global interrupts
 
     lcd_init();
 
     SPI_init();
+
+    I2C_init();
+
+    BMP280_init();
     
     NRF24_Init();
-    NRF24_RXMode();
-    //NRF24_TXMode();
+    //NRF24_RXMode();
+    NRF24_TXMode();
 
-    BIT_CLEAR(DDRC, BATTERY_MONITOR_PIN);
     
-    uint8_t TxData[32];
+    
+    
     uint8_t RxData[32];
+    uint8_t counter = 0;
 
     while (1) {
-        /*
-        #define BIT_SET(a, b) ((a) |= (1ULL << (b)))
-        #define BIT_CLEAR(a,b) ((a) &= ~(1ULL<<(b)))
-
-        BIT_SET(DDRD, 5); //PORTB pin 6
-        while (true)
-        {   
-            BIT_SET(PORTD, 5);
-            _delay_ms(1);
-            BIT_CLEAR(PORTD, 5);
-            _delay_ms(1);
-            _delay_ms(18);
-        }
-        */
         
+        /*************************************************************************************************/
+        //BMP280 TEST:
+        counter++;
+        //ReadBatteryVoltage(TxData);
+        TxData[2] = counter + 1;
+        TxData[3] = counter + 1;
 
+
+        
+        TxData[7] = 111;
+        TransmitData(TxData);
+        _delay_ms(1000);
+        TxData[7] = BMP280_ReadRegister(CONFIG);
+        TransmitData(TxData);
+        _delay_ms(2000);
+        TxData[7] = 222;
+        TransmitData(TxData);
+
+        
+        _delay_ms(2000);
+
+        /*************************************************************************************************/
+
+        /*REGULAR CODE*************************************************************************************/
+        
+        /*
         ReceiveData(RxData);
 
         ActOnReceivedData(RxData);
@@ -52,6 +72,7 @@ int main()
         }
         _delay_ms(5);// 41 seems to be good delay
         
+        */
     }
     //return 0;
 }
@@ -89,8 +110,8 @@ void TransmitData(uint8_t *TxData){
 
 void ActOnReceivedData(uint8_t *RxData){
 
-    uint16_t rudder = (uint16_t)((RxData[3] << 8) | RxData[2]);
-    uint16_t throttle = (uint16_t)((RxData[5] << 8) | RxData[4]);
+    uint16_t rudder = (uint16_t)((RxData[19] << 8) | RxData[18]);
+    uint16_t throttle = (uint16_t)((RxData[3] << 8) | RxData[2]);
     uint16_t ailerons = (uint16_t)((RxData[7] << 8) | RxData[6]);
     uint16_t elevator = (uint16_t)((RxData[9] << 8) | RxData[8]);
     uint16_t pot1 = (uint16_t)((RxData[11] << 8) | RxData[10]);
@@ -104,14 +125,16 @@ void ActOnReceivedData(uint8_t *RxData){
     {
         double percent = rudder;
         ConvertToPercentage(&percent);
-        servo1_set_percentage(percent);
+        servo2_set_percentage(percent);
+ 
     }
     
     if (throttle >= 50 && throttle <= 1000)
     {
         double percent = throttle;
         ConvertToPercentage(&percent);
-        servo2_set_percentage(percent);
+        servo1_set_percentage(percent);
+
     }
 
     if (ailerons >= 50 && ailerons <= 1000)
@@ -163,4 +186,12 @@ ReadBatteryVoltage(uint8_t *TxData){
 
     TxData[2] = voltage; //integer number (Heltal)
     TxData[3] = (voltage - TxData[2]) * 100; //Decimal number
+}
+
+void init_RX(){
+    BIT_CLEAR(DDRC, BATTERY_MONITOR_PIN);
+}
+
+void updateTxDataWithGps(uint8_t data){
+    TxData[5] = data;
 }

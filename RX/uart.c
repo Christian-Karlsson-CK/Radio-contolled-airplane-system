@@ -41,6 +41,6 @@ FILE uart_input = FDEV_SETUP_STREAM(NULL, uart_getchar, _FDEV_SETUP_READ);
 void init_serial() 
 {
     uart_init();
-    stdout = &uart_output;
-    stdin  = &uart_input;
+    //stdout = &uart_output;
+    //stdin  = &uart_input;
 }

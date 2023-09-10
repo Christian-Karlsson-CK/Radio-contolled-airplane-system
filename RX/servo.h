@@ -1,6 +1,6 @@
 #ifndef _SERVO_H_
 #define _SERVO_H_
- 
+#include "UnoR3Pins.h"
 // These pins are available on the shield via the header:
 //
 //		Mega	Uno
@@ -12,12 +12,12 @@
 // The settings below are for the Mega, modify
 // in case you want to use other pins
 #define PORT_1	PORTD
-#define PIN_1	PD3
+#define PIN_1	PIN_NUM_THROTTLE
 #define DDR_1	DDRD
  
-#define PORT_2	PORTD
-#define PIN_2	PD5
-#define DDR_2	DDRD
+#define PORT_2	PORTB
+#define PIN_2	PIN_NUM_RUDDER
+#define DDR_2	DDRB
 
 //Servo 3-4
 #define PORT_3	PORTD

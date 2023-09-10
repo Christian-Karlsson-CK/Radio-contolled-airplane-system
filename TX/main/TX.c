@@ -28,19 +28,91 @@ void app_main(void)
     SPI_init(&spi_device_handle);
 
     uint8_t TxData[32];
-    uint8_t RxData[32]; 
+    uint8_t RxData[32];
 
     NRF24_Init(&spi_device_handle);
 
-    NRF24_TXMode(&spi_device_handle);
+    //NRF24_TXMode(&spi_device_handle);
 
-    //NRF24_RXMode(&spi_device_handle);
+    NRF24_RXMode(&spi_device_handle);
     
     uint8_t TX_RX_Switch_counter = 0; //This counter is used to switch between RX and TX mode. TX mode sends all analog stick and potentiometer values.
                                       //RX mode is used to receive status data from the RX on the airplane, for instance Battery voltage. 
 
     while (true)
     {   
+        /*************************************************************************************************/
+        //GPS TEST:
+        /*
+        if(!ReceiveData(&spi_device_handle, RxData))
+            {   
+                ESP_LOGI(TAG, "NO MessageXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+                vTaskDelay(pdMS_TO_TICKS(10));
+            }
+            else
+            {
+                ESP_LOGI(TAG, "Message Received!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+                uint8_t whole = RxData[3];
+                uint8_t decimal = RxData[4];
+
+                uint8_t gps1 = RxData[5];
+                uint8_t gps2 = RxData[6];
+
+                lcd_set_cursor(0,0);
+                lcd_printf("%.2u.%.2uV", whole, decimal);
+
+                lcd_set_cursor(0,1);
+                lcd_printf("%c, %c", gps1, gps2);
+                
+                vTaskDelay(pdMS_TO_TICKS(10));
+
+            }
+            */
+
+        /*************************************************************************************************/
+
+                /*************************************************************************************************/
+        //BMP280 TEST:
+        if(!ReceiveData(&spi_device_handle, RxData))
+            {   
+                ESP_LOGI(TAG, "NO MessageXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+                vTaskDelay(pdMS_TO_TICKS(10));
+            }
+            else
+            {
+                ESP_LOGI(TAG, "Message Received!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+                uint8_t whole = RxData[3];
+                uint8_t decimal = RxData[4];
+
+                uint8_t bmp280 = RxData[8];
+                
+                lcd_clear();
+                vTaskDelay(pdMS_TO_TICKS(100));
+
+                lcd_set_cursor(0,0);
+                if ((whole > 99) | (decimal > 99))
+                {
+                    lcd_printf("00.0V");
+                }
+                else{
+                    decimal /= 10;
+                    lcd_printf("%.2u.%.1uV", whole, decimal);
+                }
+
+                lcd_set_cursor(0,1);
+                lcd_printf("%u", bmp280);
+                
+                vTaskDelay(pdMS_TO_TICKS(100));
+                
+
+            }
+
+        /*************************************************************************************************/
+
+        /*REGULAR CODE*************************************************************************************/
+        /*
         TX_RX_Switch_counter++;
 
         //NORMAL TX MODE TO SEND CONTROL DATA
@@ -64,7 +136,7 @@ void app_main(void)
             //vTaskDelay(pdMS_TO_TICKS(2));
             uint8_t tries = 0;
 
-            //LISTEN FOR INCOMMING TRANSMISSION FROM TX (AIRPLANE SIDE) MAXIMUM 10 TRIES THEN BACK TO NORMAL TX MODE
+            //LISTEN FOR INCOMMING TRANSMISSION FROM TX (AIRPLANE SIDE) MAXIMUM 5 TRIES THEN BACK TO NORMAL TX MODE
             while (!ReceiveData(&spi_device_handle, RxData) && tries < 5)
             {   
                 ESP_LOGI(TAG, "NO MessageXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
@@ -79,19 +151,30 @@ void app_main(void)
                 uint8_t decimal = RxData[4];
 
                 lcd_set_cursor(0,0);
-                lcd_printf("%.2u.%.2uV", whole, decimal);
+                if ((whole > 99) | (decimal > 99))
+                {
+                    lcd_printf("00.0V");
+                }
+                else{
+                    decimal /= 10;
+                    lcd_printf("%.2u.%.1uV", whole, decimal);
+                }
+                
+                
             }
             
             tries = 0;
             TX_RX_Switch_counter = 0;
             NRF24_TXMode(&spi_device_handle);
         }
+        */
+        /*************************************************************************************************/
     }
 }
 
 void InitControls(){
     //Joysticks
-    gpio_set_direction(PIN_RUDDER, GPIO_MODE_INPUT);
+    gpio_set_direction(PIN_RUDDER,   GPIO_MODE_INPUT);
     gpio_set_direction(PIN_THROTTLE, GPIO_MODE_INPUT); 
     gpio_set_direction(PIN_AILERONS, GPIO_MODE_INPUT);
     gpio_set_direction(PIN_ELEVATOR, GPIO_MODE_INPUT);
@@ -104,9 +187,9 @@ void InitControls(){
     adc2_config_channel_atten(ADC2_CHANNEL_2, ADC_ATTEN_DB_11); //Elevator
 
     //Switches
-    gpio_set_direction(PIN_SWITCH1_UP, GPIO_MODE_INPUT);
+    gpio_set_direction(PIN_SWITCH1_UP,   GPIO_MODE_INPUT);
     gpio_set_direction(PIN_SWITCH1_DOWN, GPIO_MODE_INPUT);
-    gpio_set_direction(PIN_SWITCH2_UP, GPIO_MODE_INPUT);
+    gpio_set_direction(PIN_SWITCH2_UP,   GPIO_MODE_INPUT);
     gpio_set_direction(PIN_SWITCH2_DOWN, GPIO_MODE_INPUT);
 
     //Potentiometers
@@ -144,7 +227,7 @@ uint8_t ReceiveData(spi_device_handle_t *spi_device_handle, uint8_t *RxData){
 }
 
 void ReadAllAnalog(uint8_t *TxData){
-    uint16_t rudder = adc1_get_raw(ADC1_CHANNEL_3);
+    uint16_t rudder =   adc1_get_raw(ADC1_CHANNEL_3);
     uint16_t throttle = adc1_get_raw(ADC1_CHANNEL_0);
 
     uint16_t ailerons;
@@ -156,20 +239,20 @@ void ReadAllAnalog(uint8_t *TxData){
     uint16_t pot2;
     adc2_get_raw(ADC2_CHANNEL_4, ADC_WIDTH_BIT_10, &pot2);
 
-    uint8_t switch1Up = gpio_get_level(PIN_SWITCH1_UP);
+    uint8_t switch1Up =   gpio_get_level(PIN_SWITCH1_UP);
     uint8_t switch1Down = gpio_get_level(PIN_SWITCH1_DOWN);
 
-    uint8_t switch2Up = gpio_get_level(PIN_SWITCH2_UP);
+    uint8_t switch2Up =   gpio_get_level(PIN_SWITCH2_UP);
     uint8_t switch2Down = gpio_get_level(PIN_SWITCH2_DOWN);
 
-    TxData[2] = (uint8_t)(rudder & 0xFF);
-    TxData[3] = (uint8_t)(rudder >> 8);
-    TxData[4] = (uint8_t)(throttle & 0xFF);
-    TxData[5] = (uint8_t)(throttle >> 8);
-    TxData[6] = (uint8_t)(ailerons & 0xFF);
-    TxData[7] = (uint8_t)(ailerons >> 8);
-    TxData[8] = (uint8_t)(elevator & 0xFF);
-    TxData[9] = (uint8_t)(elevator >> 8);
+    TxData[18] =  (uint8_t)(rudder & 0xFF); 
+    TxData[19] =  (uint8_t)(rudder >> 8);
+    TxData[2] =  (uint8_t)(throttle & 0xFF);
+    TxData[3] =  (uint8_t)(throttle >> 8);
+    TxData[6] =  (uint8_t)(ailerons & 0xFF);
+    TxData[7] =  (uint8_t)(ailerons >> 8);
+    TxData[8] =  (uint8_t)(elevator & 0xFF);
+    TxData[9] =  (uint8_t)(elevator >> 8);
     TxData[10] = (uint8_t)(pot1 & 0xFF);
     TxData[11] = (uint8_t)(pot1 >> 8);
     TxData[12] = (uint8_t)(pot2 & 0xFF);
@@ -186,11 +269,15 @@ void ReadAllAnalog(uint8_t *TxData){
     uint16_t elevatorT = (uint16_t)((TxData[9] << 8) | TxData[8]);
     uint16_t pot1T = (uint16_t)((TxData[11] << 8) | TxData[10]);
     uint16_t pot2T = (uint16_t)((TxData[13] << 8) | TxData[12]);
-
+    
     ESP_LOGI(TAG, "rudder: %u, throttle: %u", rudderT, throttleT);
     ESP_LOGI(TAG, "ailerons: %u, elevator: %u", aileronsT, elevatorT);
     ESP_LOGI(TAG, "Pot1: %u, Pot2: %u", pot1T, pot2T);
     ESP_LOGI(TAG, "sw1Up: %u, sw1Down: %u", TxData[14], TxData[15]);
     ESP_LOGI(TAG, "sw2Up: %u, sw2Down: %u", TxData[16], TxData[17]);
     */
+
+    //vTaskDelay(pdMS_TO_TICKS(10));
+    
+    
 }

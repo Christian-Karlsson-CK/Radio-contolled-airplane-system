@@ -13,12 +13,14 @@
 #include "lcd.h"
 #include "GPIO_PINS.h"
 
-#define SWITCH_TO_TX_COMMAND        255
-#define NO_COMMAND                  0
+#define SWITCH_TO_TX_COMMAND 255
+#define NO_COMMAND           0
 
-#define COMMAND_BYTE                6
+#define COMMAND_BYTE         6
 
-#define TX_TO_RX_THRESHOLD          50
+#define TX_TO_RX_THRESHOLD   50
+
+
 //#define RECEIVED_ACKNOWLEDGMENT   123
 
 typedef struct AnalogReadings

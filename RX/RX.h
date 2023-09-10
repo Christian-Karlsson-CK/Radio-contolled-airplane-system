@@ -16,6 +16,8 @@
 #include "NRF24L01.h"
 #include "UnoR3Pins.h"
 #include "lcd.h"
+#include "BMP280.h"
+//#include "GY_NEO6MV2.h"
 
 #define SWITCH_TO_TX_COMMAND   255
 
@@ -29,6 +31,8 @@
 #define BIT_FLIP(a,b) ((a) ^= (1ULL<<(b)))
 #define BIT_CHECK(a,b) (!!((a) & (1ULL<<(b))))
 
+void init_RX();
+
 void ConvertToPercentage(double* reading);
 
 uint8_t ReceiveData(uint8_t *RxData);
@@ -37,6 +41,8 @@ void ActOnReceivedData(uint8_t *RxData);
 void TransmitData(uint8_t *TxData);
 
 ReadBatteryVoltage(uint8_t *TxData);
+
+void updateTxDataWithGps(uint8_t data);
 
 
 
