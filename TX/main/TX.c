@@ -86,7 +86,35 @@ void app_main(void)
                 uint8_t whole = RxData[3];
                 uint8_t decimal = RxData[4];
 
-                uint8_t bmp280 = RxData[8];
+                //uint8_t bmp280 = RxData[8];
+                //uint16_t bmp280 = (uint16_t)((RxData[9] << 8) | RxData[8]);
+                uint8_t BxData[4] = {0x00, 0x00, 0xFD, 0xA0};
+                uint32_t bmp280 = 0;
+                    bmp280 |= (((uint32_t)RxData[11]) << 24);
+                    bmp280 |= (((uint32_t)RxData[10]) << 16);
+                    bmp280 |= (((uint32_t)RxData[9]) << 8);
+                    bmp280 |= (((uint32_t)RxData[8]) << 0);
+                    
+
+                    double altitude;
+                    altitude = (1 - pow(bmp280 / (double)103490, 0.1903)) / 0.0000225577; //101325
+                    //double alt = 0;
+                    //alt |= (((uint8_t)RxData[11] & 0xFF) << 56);
+                    //alt |= (((uint8_t)RxData[11] & 0xFF) << 48);
+                    //alt |= (((uint8_t)RxData[11] & 0xFF) << 40);
+                    //alt |= (((uint8_t)RxData[11] & 0xFF) << 32);
+
+                    //alt |= (((uint8_t)RxData[12] & 0xFF) << 24);
+                    //alt |= (((uint8_t)RxData[13] & 0xFF) << 16);
+                    //alt |= (((uint8_t)RxData[9] & 0xFF) << 8);
+                    //alt |= (((uint8_t)RxData[8] & 0xFF) << 0);
+
+                    //bmp280 |= ((int32_t)BxData[0] & 0xFF);
+                    //bmp280 |= (((int32_t)BxData[1] & 0xFF) << 8);
+                    //bmp280 |= (((int32_t)BxData[1] & 0xFF) << 16);
+                    //bmp280 |= (((int32_t)BxData[0] & 0xFF) << 24);
+                //uint16_t bmp280 = 65535;
+                
                 
                 lcd_clear();
                 vTaskDelay(pdMS_TO_TICKS(100));
@@ -102,7 +130,7 @@ void app_main(void)
                 }
 
                 lcd_set_cursor(0,1);
-                lcd_printf("%u", bmp280);
+                lcd_printf("ALT:%.2lfM", altitude);
                 
                 vTaskDelay(pdMS_TO_TICKS(100));
                 

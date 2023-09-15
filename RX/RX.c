@@ -19,7 +19,16 @@ int main()
 
     I2C_init();
 
-    BMP280_init();
+    uint32_t bmp280 = BMP280_init();
+
+    //double alt;
+	//alt = (1 - pow(bmp280/(double)101325, 0.1903)) / 0.0000225577;
+
+    double altitude;
+    altitude = (1 - pow(bmp280 / (double)101325, 0.1903)) / 0.0000225577;
+
+    int16_t altitudeAsInt = (int16_t)altitude;
+
     
     NRF24_Init();
     //NRF24_RXMode();
@@ -40,16 +49,31 @@ int main()
         TxData[2] = counter + 1;
         TxData[3] = counter + 1;
 
-
+        //~125Meter
+        //99825 PA
         
-        TxData[7] = 111;
+        //TxData[7] = 111;
+        //TransmitData(TxData);
+        //_delay_ms(1000);
+        //int32_t test = 65000;
+        TxData[7] = ((uint32_t)bmp280 >> 0);
+        TxData[8] = ((uint32_t)bmp280 >> 8);
+        TxData[9] = ((uint32_t)bmp280 >> 16);
+        TxData[10] = ((uint32_t)bmp280 >> 24);
+
+        //TxData[7] = ((uint8_t)alt >> 0) & 0xFF;
+        //TxData[8] = ((uint8_t)alt >> 8) & 0xFF;
+        //TxData[9] = ((uint8_t)alt >> 16) & 0xFF;
+        //TxData[10] = ((uint8_t)alt >> 24) & 0xFF;
+        //TxData[11] = ((uint8_t)alt >> 32) & 0xFF;
+        //TxData[12] = ((uint8_t)alt >> 40) & 0xFF;
+        //TxData[13] = ((uint8_t)alt >> 48) & 0xFF;
+        //TxData[14] = ((uint8_t)alt >> 56) & 0xFF;
+
         TransmitData(TxData);
-        _delay_ms(1000);
-        TxData[7] = BMP280_ReadRegister(CONFIG);
-        TransmitData(TxData);
-        _delay_ms(2000);
-        TxData[7] = 222;
-        TransmitData(TxData);
+        //_delay_ms(2000);
+        //TxData[7] = 222;
+        //TransmitData(TxData);
 
         
         _delay_ms(2000);

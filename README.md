@@ -24,7 +24,7 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
 1. Successfully configured and tested the joystick's analog input with the ESP32 (for testing purposes).  
 2. ~~Test servo on ESP32.~~ I initially attempted to test the servo on the ESP32, but it proved to be more challenging than expected and ultimately deemed unnecessary, so I skipped this step.  
 3. Wrote a library for the NRF24L01 transceiver for ESP32.  
-3.1 3.1 Invested significant time in ensuring proper register read/write functionality (ESP32).  
+3.1 Invested significant time in ensuring proper register read/write functionality (ESP32).  
 3.2 Verified the SPI transmission to the NRF24L01 was functioning correctly (ESP32).  
 3.3 Adapted the NRF24L01 library for compatibility with an AVR MCU.  
 3.4 Confirmed register read/write operations with the AVR MCU.  
@@ -41,12 +41,15 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
 7.1 Connected all buttons, switches, joysticks and everything else needed to test that the whole system functions as expected.  
 7.2 Test complete system on an airplane and confirmed that everything works as expected. (All analog control data is received properly to RX but, atmega328p seems not be able to control more than 2 servo/ESC) I will continue to next steps and decide if i need another MCU at a later time.  
 7.3 Wrote necessary LCD functions for esp32 and confirmed that they do work properly.  
+8. Designed a custom circuit board for the transmitter, accommodating components such as joysticks, MCU, on/off button, switches, and more.  
+8.1 Added an GY-BMP280 module that can measure temperature and atmospheric pressure. With the atomspheric pressure I can calculate the airplanes altitude and display on the LCD-display on the remote control.  
 
-**TODO:**  
 
-8. Design a custom circuit board for the transmitter, accommodating components such as joysticks, MCU, on/off button, switches, and more.  
+**TODO:**   
+8.2 Add an GY-271 Compass module and read the bearing value.  
 9. Implement additional functions like a arming function, trims, buzzer etc.  
-10. (OPTIONAL) Explore the integration of GPS functionality into the system.
+10. (OPTIONAL) Explore the integration of GPS functionality into the system.  
+11. Implement a Return-To-Home function.
 
 **MAIN PROBLEMS:**  
 

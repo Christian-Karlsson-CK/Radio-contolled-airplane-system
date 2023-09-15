@@ -9,22 +9,16 @@
 
 void I2C_init();
 
-void BMP280_init();
-
-void BMP280_Start(void);
+uint32_t BMP280_init();
 
 uint8_t BMP280_ReadRegister(uint8_t register);
 void BMP280_WriteRegister(uint8_t register, uint8_t registerData);
 
-float BMP280_GetTemp(void);
-
-float BMP280_GetPress(int oss);
-
-float BMP280_GetAlt(int oss);
-
 
 
 #define BMP280_ADDRESS 0x77
+
+#define BMP280_CAL_DATA_BYTE_SIZE 26
 
 #define wait_for_completion while(!(TWCR & (1 << TWINT)))
 #define I2C_WRITE 0
