@@ -16,6 +16,7 @@ idf.py flash -p COM3 monitor
     builda & flasha till MCU, monitor är optional om man vill övervaka.
 */
 #include "TX.h"
+#include <math.h>
 
 static const char *TAG = "Debug:";
 
@@ -32,9 +33,20 @@ void app_main(void)
 
     NRF24_Init(&spi_device_handle);
 
-    //NRF24_TXMode(&spi_device_handle);
+    NRF24_TXMode(&spi_device_handle);
 
-    NRF24_RXMode(&spi_device_handle);
+    uint8_t customDegreeSymbol[8] = {
+        0b00110,
+        0b01001,
+        0b01001,
+        0b00110,
+        0b00000,
+        0b00000,
+        0b00000,
+        0b00000
+    };
+
+    //NRF24_RXMode(&spi_device_handle);
     
     uint8_t TX_RX_Switch_counter = 0; //This counter is used to switch between RX and TX mode. TX mode sends all analog stick and potentiometer values.
                                       //RX mode is used to receive status data from the RX on the airplane, for instance Battery voltage. 
@@ -72,8 +84,9 @@ void app_main(void)
 
         /*************************************************************************************************/
 
-                /*************************************************************************************************/
-        //BMP280 TEST:
+        /*************************************************************************************************/
+        //GY-271 TEST:
+        /*
         if(!ReceiveData(&spi_device_handle, RxData))
             {   
                 ESP_LOGI(TAG, "NO MessageXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
@@ -86,35 +99,12 @@ void app_main(void)
                 uint8_t whole = RxData[3];
                 uint8_t decimal = RxData[4];
 
-                //uint8_t bmp280 = RxData[8];
+
+                int16_t heading = 0;
+                    heading |= (((int16_t)RxData[30]) << 8);
+                    heading |= (((int16_t)RxData[29]) << 0);
+
                 //uint16_t bmp280 = (uint16_t)((RxData[9] << 8) | RxData[8]);
-                uint8_t BxData[4] = {0x00, 0x00, 0xFD, 0xA0};
-                uint32_t bmp280 = 0;
-                    bmp280 |= (((uint32_t)RxData[11]) << 24);
-                    bmp280 |= (((uint32_t)RxData[10]) << 16);
-                    bmp280 |= (((uint32_t)RxData[9]) << 8);
-                    bmp280 |= (((uint32_t)RxData[8]) << 0);
-                    
-
-                    double altitude;
-                    altitude = (1 - pow(bmp280 / (double)103490, 0.1903)) / 0.0000225577; //101325
-                    //double alt = 0;
-                    //alt |= (((uint8_t)RxData[11] & 0xFF) << 56);
-                    //alt |= (((uint8_t)RxData[11] & 0xFF) << 48);
-                    //alt |= (((uint8_t)RxData[11] & 0xFF) << 40);
-                    //alt |= (((uint8_t)RxData[11] & 0xFF) << 32);
-
-                    //alt |= (((uint8_t)RxData[12] & 0xFF) << 24);
-                    //alt |= (((uint8_t)RxData[13] & 0xFF) << 16);
-                    //alt |= (((uint8_t)RxData[9] & 0xFF) << 8);
-                    //alt |= (((uint8_t)RxData[8] & 0xFF) << 0);
-
-                    //bmp280 |= ((int32_t)BxData[0] & 0xFF);
-                    //bmp280 |= (((int32_t)BxData[1] & 0xFF) << 8);
-                    //bmp280 |= (((int32_t)BxData[1] & 0xFF) << 16);
-                    //bmp280 |= (((int32_t)BxData[0] & 0xFF) << 24);
-                //uint16_t bmp280 = 65535;
-                
                 
                 lcd_clear();
                 vTaskDelay(pdMS_TO_TICKS(100));
@@ -130,17 +120,24 @@ void app_main(void)
                 }
 
                 lcd_set_cursor(0,1);
-                lcd_printf("ALT:%.2lfM", altitude);
+                lcd_printf("%d", z);
+                lcd_set_cursor(6,1);
+                lcd_printf("%d", z1);
+                //lcd_set_cursor(11,1);
+                //lcd_printf("%d", z1);
+
+                lcd_set_cursor(7,0);
+                lcd_printf("%d", heading);
                 
                 vTaskDelay(pdMS_TO_TICKS(100));
                 
 
             }
-
+        */
         /*************************************************************************************************/
 
         /*REGULAR CODE*************************************************************************************/
-        /*
+        
         TX_RX_Switch_counter++;
 
         //NORMAL TX MODE TO SEND CONTROL DATA
@@ -167,16 +164,46 @@ void app_main(void)
             //LISTEN FOR INCOMMING TRANSMISSION FROM TX (AIRPLANE SIDE) MAXIMUM 5 TRIES THEN BACK TO NORMAL TX MODE
             while (!ReceiveData(&spi_device_handle, RxData) && tries < 5)
             {   
-                ESP_LOGI(TAG, "NO MessageXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+                ESP_LOGI(TAG, "NO MessageXXXXXXXXXXXXX");
                 vTaskDelay(pdMS_TO_TICKS(0.7));
                 tries++;
             }
             if (tries <= 5)
             {
-                ESP_LOGI(TAG, "Message Received!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                ESP_LOGI(TAG, "Message Received!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
                 uint8_t whole = RxData[3];
                 uint8_t decimal = RxData[4];
+
+                int32_t bmp280_temp = 0;
+                    bmp280_temp |= (((int32_t)RxData[11]) << 24);
+                    bmp280_temp |= (((int32_t)RxData[10]) << 16);
+                    bmp280_temp |= (((int32_t)RxData[9]) << 8);
+                    bmp280_temp |= (((int32_t)RxData[8]) << 0);
+
+                uint32_t bmp280_pressure = 0;
+                    bmp280_pressure |= (((uint32_t)RxData[15]) << 24);
+                    bmp280_pressure |= (((uint32_t)RxData[14]) << 16);
+                    bmp280_pressure |= (((uint32_t)RxData[13]) << 8);
+                    bmp280_pressure |= (((uint32_t)RxData[12]) << 0);
+
+                //int16_t heading = 0;
+                //    heading |= (((int16_t)RxData[17]) << 8);
+                //    heading |= (((int16_t)RxData[16]) << 0);
+
+                int16_t x = 0;
+                    x |= (((int16_t)RxData[17]) << 8);
+                    x |= (((int16_t)RxData[16]) << 0);
+                
+                int16_t y = 0;
+                    y |= (((int16_t)RxData[19]) << 8);
+                    y |= (((int16_t)RxData[18]) << 0);
+
+                
+                float heading = CalculateHeading(x, y); 
+
+                double altitude = CalculateAltitude(bmp280_pressure);
+                
 
                 lcd_set_cursor(0,0);
                 if ((whole > 99) | (decimal > 99))
@@ -188,6 +215,14 @@ void app_main(void)
                     lcd_printf("%.2u.%.1uV", whole, decimal);
                 }
                 
+                //lcd_set_cursor(6,0);
+                //lcd_printf("TEMP:%dM", bmp280_temp);
+
+                lcd_set_cursor(0,1);
+                lcd_printf("ALT:%dM", (int)altitude);
+
+                lcd_set_cursor(10,1);
+                lcd_printf("H:%d", (int)heading);
                 
             }
             
@@ -195,7 +230,7 @@ void app_main(void)
             TX_RX_Switch_counter = 0;
             NRF24_TXMode(&spi_device_handle);
         }
-        */
+        
         /*************************************************************************************************/
     }
 }
@@ -309,3 +344,16 @@ void ReadAllAnalog(uint8_t *TxData){
     
     
 }
+
+
+double CalculateAltitude(uint32_t pressure){
+    return (1 - pow(pressure / (double)103490, 0.1903)) / 0.0000225577; //101325
+}
+
+float CalculateHeading(int16_t x, int16_t y){
+    float heading = atan2((double)y,(double)x)*180.0/M_PI;
+    heading = (heading < 0)? 360 + heading:heading;  
+
+    return heading;
+}
+

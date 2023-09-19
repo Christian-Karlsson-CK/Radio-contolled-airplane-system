@@ -42,3 +42,7 @@ void TransmitData(uint8_t *TxData, spi_device_handle_t *spi_device_handle);
 void ReadAllAnalog(uint8_t *TxData);
 
 uint8_t ReceiveData(spi_device_handle_t *spi_device_handle, uint8_t *RxData);
+
+double CalculateAltitude(uint32_t pressure);
+float CalculateHeading(int16_t x, int16_t y);
+

@@ -17,6 +17,7 @@
 #include "UnoR3Pins.h"
 #include "lcd.h"
 #include "BMP280.h"
+#include "GY_271.h"
 //#include "GY_NEO6MV2.h"
 
 #define SWITCH_TO_TX_COMMAND   255

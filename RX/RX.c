@@ -19,84 +19,72 @@ int main()
 
     I2C_init();
 
-    uint32_t bmp280 = BMP280_init();
-
-    //double alt;
-	//alt = (1 - pow(bmp280/(double)101325, 0.1903)) / 0.0000225577;
-
-    double altitude;
-    altitude = (1 - pow(bmp280 / (double)101325, 0.1903)) / 0.0000225577;
-
-    int16_t altitudeAsInt = (int16_t)altitude;
+    BMP280_init();
+    GY271_init();
 
     
     NRF24_Init();
-    //NRF24_RXMode();
-    NRF24_TXMode();
+    NRF24_RXMode();
+    //NRF24_TXMode();
 
-    
-    
-    
     uint8_t RxData[32];
     uint8_t counter = 0;
 
     while (1) {
         
         /*************************************************************************************************/
-        //BMP280 TEST:
+        //GY-271 TEST:
+
+        /*
         counter++;
         //ReadBatteryVoltage(TxData);
         TxData[2] = counter + 1;
         TxData[3] = counter + 1;
-
-        //~125Meter
-        //99825 PA
         
-        //TxData[7] = 111;
-        //TransmitData(TxData);
-        //_delay_ms(1000);
-        //int32_t test = 65000;
-        TxData[7] = ((uint32_t)bmp280 >> 0);
-        TxData[8] = ((uint32_t)bmp280 >> 8);
-        TxData[9] = ((uint32_t)bmp280 >> 16);
-        TxData[10] = ((uint32_t)bmp280 >> 24);
+        TxData[15] = GY271_ReadRegister(GY271_X_LSB_REG);
+        TxData[16] = GY271_ReadRegister(GY271_X_MSB_REG);
 
-        //TxData[7] = ((uint8_t)alt >> 0) & 0xFF;
-        //TxData[8] = ((uint8_t)alt >> 8) & 0xFF;
-        //TxData[9] = ((uint8_t)alt >> 16) & 0xFF;
-        //TxData[10] = ((uint8_t)alt >> 24) & 0xFF;
-        //TxData[11] = ((uint8_t)alt >> 32) & 0xFF;
-        //TxData[12] = ((uint8_t)alt >> 40) & 0xFF;
-        //TxData[13] = ((uint8_t)alt >> 48) & 0xFF;
-        //TxData[14] = ((uint8_t)alt >> 56) & 0xFF;
+        TxData[17] = GY271_ReadRegister(GY271_Y_LSB_REG);
+        TxData[18] = GY271_ReadRegister(GY271_Y_MSB_REG);
+
+        TxData[19] = GY271_ReadRegister(GY271_Z_LSB_REG);
+        TxData[20] = GY271_ReadRegister(GY271_Z_MSB_REG);
+
+        TxData[21] = GY271_ReadRegister(GY271_STATUS_REG);
+
+        GY271_GetHeading(TxData);
+        
+        
+
 
         TransmitData(TxData);
-        //_delay_ms(2000);
-        //TxData[7] = 222;
-        //TransmitData(TxData);
 
         
         _delay_ms(2000);
-
+        */
         /*************************************************************************************************/
 
         /*REGULAR CODE*************************************************************************************/
         
-        /*
+        
         ReceiveData(RxData);
 
         ActOnReceivedData(RxData);
 
         if (RxData[COMMAND_BYTE] == SWITCH_TO_TX_COMMAND)
         {   
+            //Prepare transmit buffer with sensor readings
             ReadBatteryVoltage(TxData);
+            BMP280_ReadTempAndPressure(TxData);
+            GY271_ReadXAndY(TxData);
+            
             NRF24_TXMode();
             TransmitData(TxData);
             NRF24_RXMode();
         }
         _delay_ms(5);// 41 seems to be good delay
         
-        */
+        
     }
     //return 0;
 }

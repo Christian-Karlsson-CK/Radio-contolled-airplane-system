@@ -11,7 +11,7 @@ LDFLAGS=-mmcu=$(MCU)
 PORT=\\\\.\\COM6
 BIN=airplane
 OUT=${BIN}.hex
-SOURCES = lcd.c RX.c millis.c analogRead.c servo.c NRF24L01.c BMP280.c
+SOURCES = lcd.c RX.c millis.c analogRead.c servo.c NRF24L01.c BMP280.c gy_271.c
 
 DEBUG?=1
 

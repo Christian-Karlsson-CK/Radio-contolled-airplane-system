@@ -9,12 +9,12 @@
 
 void I2C_init();
 
-uint32_t BMP280_init();
+void BMP280_init();
 
 uint8_t BMP280_ReadRegister(uint8_t register);
 void BMP280_WriteRegister(uint8_t register, uint8_t registerData);
 
-
+void  BMP280_ReadTempAndPressure(uint8_t *TxData);
 
 #define BMP280_ADDRESS 0x77
 

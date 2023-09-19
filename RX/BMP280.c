@@ -39,7 +39,7 @@ void I2C_init() {
     _delay_us(10);
 }
 
-uint32_t BMP280_init() {
+void BMP280_init() {
     
     //1. Configure the BMP280
     uint8_t config = (STANDBY_TIME_1000_MS << T_SB) |
@@ -73,58 +73,6 @@ uint32_t BMP280_init() {
     bmp280_calibration.dig_p8 = (int16_t)BMP280_ReadRegister(0x9D) << 8 | (int16_t)BMP280_ReadRegister(0x9C);               //-6338
     bmp280_calibration.dig_p9 = (int16_t)BMP280_ReadRegister(0x9F) << 8 | (int16_t)BMP280_ReadRegister(0x9E);               //-225
     
-    int32_t var1, var2, t_fine;
-
-    int32_t PressureRaw = 0;
-    //int32_t TemperatureRaw = ((int32_t)BMP280_ReadRegister(0xF7)<< 12) | ((int32_t)BMP280_ReadRegister(0xF8) << 4) | ((int32_t)BMP280_ReadRegister(0xF9) >> 4);
-    PressureRaw =              ((int32_t)BMP280_ReadRegister(0xF7)<< 12) | ((int32_t)BMP280_ReadRegister(0xF8) << 4) | ((int32_t)BMP280_ReadRegister(0xF9) >> 4);
-
-    int32_t TemperatureRaw = 0;
-    TemperatureRaw |= (int32_t)BMP280_ReadRegister(0xFA) << 12;
-    TemperatureRaw |= (int32_t)BMP280_ReadRegister(0xFB) << 4;
-    TemperatureRaw |= (int32_t)BMP280_ReadRegister(0xFC) >> 4;
-
-    var1 = ((((TemperatureRaw >> 3) - ((int32_t)bmp280_calibration.dig_t1 << 1)))
-		* ((int32_t)bmp280_calibration.dig_t2)) >> 11;
-
-	var2 = (((((TemperatureRaw >> 4) - ((int32_t)bmp280_calibration.dig_t1))
-		* ((TemperatureRaw >> 4) - ((int32_t)bmp280_calibration.dig_t1))) >> 12)
-		* ((int32_t)bmp280_calibration.dig_t3)) >> 14;
-	t_fine = var1 + var2;
-	int32_t bmp280_temp = (t_fine * 5 + 128) >> 8;
-    
-
-    int32_t something = bmp280_temp;
-
-
-    // compute the pressure
-	var1 = (((int32_t)t_fine) >> 1) - (int32_t)64000;
-	var2 = (((var1 >> 2) * (var1 >> 2)) >> 11) * ((int32_t)bmp280_calibration.dig_p6);
-	var2 = var2 + ((var1 * ((int32_t)bmp280_calibration.dig_p5)) << 1);
-	var2 = (var2 >> 2) + (((int32_t)bmp280_calibration.dig_p4) << 16);
-	var1 = (((bmp280_calibration.dig_p3 * (((var1 >> 2) * (var1 >> 2)) >> 13)) >> 3)
-		+ ((((int32_t)bmp280_calibration.dig_p2) * var1) >> 1)) >> 18;
-	var1 = ((((32768 + var1)) * ((int32_t)bmp280_calibration.dig_p1)) >> 15);
-    
-    uint32_t bmp280_pressure = 0;
-
-	if (var1 == 0) {
-		bmp280_pressure = 0;
-	} else {
-		bmp280_pressure = (((uint32_t)(((int32_t)1048576)-PressureRaw)
-			- (var2 >> 12))) * 3125;
-		if (bmp280_pressure < 0x80000000) {
-			bmp280_pressure = (bmp280_pressure << 1) / ((uint32_t)var1);
-		} else {
-			bmp280_pressure = (bmp280_pressure / (uint32_t)var1) * 2;
-		}
-		var1 = (((int32_t)bmp280_calibration.dig_p9) * ((int32_t)(((bmp280_pressure>>3) * (bmp280_pressure >> 3)) >> 13))) >> 12;
-		var2 = (((int32_t)(bmp280_pressure >> 2)) * ((int32_t)bmp280_calibration.dig_p8)) >> 13;
-		bmp280_pressure = (uint32_t)((uint32_t)bmp280_pressure + ((var1 + var2 + bmp280_calibration.dig_p7) >> 4));
-	}
-    
-
-    return bmp280_pressure;
 }
 
 
@@ -203,13 +151,71 @@ void BMP280_WriteRegister(uint8_t reg, uint8_t registerData){
 
 }
 
+void BMP280_ReadTempAndPressure(uint8_t *TxData){
+    int32_t var1, var2, t_fine;   //Values for computations
+    int32_t TemperatureRaw = 0;   //Raw sensor reading
+    int32_t PressureRaw = 0;      //Raw sensor reading
+    int32_t bmp280_temp = 0;      //Actual Temperature in Celsius
+    uint32_t bmp280_pressure = 0; //Actual Pressure in Pascal
+    
+    //Read raw temperature and pressure
+    //int32_t TemperatureRaw = ((int32_t)BMP280_ReadRegister(0xF7)<< 12) | ((int32_t)BMP280_ReadRegister(0xF8) << 4) | ((int32_t)BMP280_ReadRegister(0xF9) >> 4);
+    PressureRaw = ((int32_t)BMP280_ReadRegister(0xF7)<< 12) | 
+                  ((int32_t)BMP280_ReadRegister(0xF8) << 4) | 
+                  ((int32_t)BMP280_ReadRegister(0xF9) >> 4);
+
+    TemperatureRaw |= (int32_t)BMP280_ReadRegister(0xFA) << 12;
+    TemperatureRaw |= (int32_t)BMP280_ReadRegister(0xFB) << 4;
+    TemperatureRaw |= (int32_t)BMP280_ReadRegister(0xFC) >> 4;
 
 
+    //Compute temperature
+    var1 = ((((TemperatureRaw >> 3) - ((int32_t)bmp280_calibration.dig_t1 << 1)))
+		* ((int32_t)bmp280_calibration.dig_t2)) >> 11;
 
+	var2 = (((((TemperatureRaw >> 4) - ((int32_t)bmp280_calibration.dig_t1))
+		* ((TemperatureRaw >> 4) - ((int32_t)bmp280_calibration.dig_t1))) >> 12)
+		* ((int32_t)bmp280_calibration.dig_t3)) >> 14;
+	t_fine = var1 + var2;
+	bmp280_temp = (t_fine * 5 + 128) >> 8;
+    
 
+    // Compute pressure
+	var1 = (((int32_t)t_fine) >> 1) - (int32_t)64000;
+	var2 = (((var1 >> 2) * (var1 >> 2)) >> 11) * ((int32_t)bmp280_calibration.dig_p6);
+	var2 = var2 + ((var1 * ((int32_t)bmp280_calibration.dig_p5)) << 1);
+	var2 = (var2 >> 2) + (((int32_t)bmp280_calibration.dig_p4) << 16);
+	var1 = (((bmp280_calibration.dig_p3 * (((var1 >> 2) * (var1 >> 2)) >> 13)) >> 3)
+		+ ((((int32_t)bmp280_calibration.dig_p2) * var1) >> 1)) >> 18;
+	var1 = ((((32768 + var1)) * ((int32_t)bmp280_calibration.dig_p1)) >> 15);
+    
+	if (var1 == 0) {
+		bmp280_pressure = 0;
+	} else {
+		bmp280_pressure = (((uint32_t)(((int32_t)1048576)-PressureRaw)
+			- (var2 >> 12))) * 3125;
+		if (bmp280_pressure < 0x80000000) {
+			bmp280_pressure = (bmp280_pressure << 1) / ((uint32_t)var1);
+		} else {
+			bmp280_pressure = (bmp280_pressure / (uint32_t)var1) * 2;
+		}
+		var1 = (((int32_t)bmp280_calibration.dig_p9) * ((int32_t)(((bmp280_pressure>>3) * (bmp280_pressure >> 3)) >> 13))) >> 12;
+		var2 = (((int32_t)(bmp280_pressure >> 2)) * ((int32_t)bmp280_calibration.dig_p8)) >> 13;
+		bmp280_pressure = (uint32_t)((uint32_t)bmp280_pressure + ((var1 + var2 + bmp280_calibration.dig_p7) >> 4));
+	}
 
+    //Add temperature and pressure to transmit buffer.
+    TxData[7] = ((int32_t)bmp280_temp >> 0);
+    TxData[8] = ((int32_t)bmp280_temp >> 8);
+    TxData[9] = ((int32_t)bmp280_temp >> 16);
+    TxData[10] = ((int32_t)bmp280_temp >> 24);
 
+    TxData[11] = ((uint32_t)bmp280_pressure >> 0);
+    TxData[12] = ((uint32_t)bmp280_pressure >> 8);
+    TxData[13] = ((uint32_t)bmp280_pressure >> 16);
+    TxData[14] = ((uint32_t)bmp280_pressure >> 24);
 
+}
 
 
 
