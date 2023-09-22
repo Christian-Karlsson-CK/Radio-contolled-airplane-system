@@ -22,9 +22,6 @@
 #define PIN_NUM_SDA  PC4
 #define PIN_NUM_SCL  PC5
 
-
-
-
 //BATTERY MONITOR PORTC
 #define BATTERY_MONITOR_PIN PC0
 

@@ -1,6 +1,6 @@
 #include "RX.h"
 
-uint8_t TxData[32];
+volatile uint8_t TxData[32];
 
 int main()
 {   
@@ -9,7 +9,7 @@ int main()
     init_RX();
 
     init_servo();
-    //init_uart();
+    uart_init();
     //millis_init();
     sei(); // Enable global interrupts
 
@@ -40,21 +40,6 @@ int main()
         //ReadBatteryVoltage(TxData);
         TxData[2] = counter + 1;
         TxData[3] = counter + 1;
-        
-        TxData[15] = GY271_ReadRegister(GY271_X_LSB_REG);
-        TxData[16] = GY271_ReadRegister(GY271_X_MSB_REG);
-
-        TxData[17] = GY271_ReadRegister(GY271_Y_LSB_REG);
-        TxData[18] = GY271_ReadRegister(GY271_Y_MSB_REG);
-
-        TxData[19] = GY271_ReadRegister(GY271_Z_LSB_REG);
-        TxData[20] = GY271_ReadRegister(GY271_Z_MSB_REG);
-
-        TxData[21] = GY271_ReadRegister(GY271_STATUS_REG);
-
-        GY271_GetHeading(TxData);
-        
-        
 
 
         TransmitData(TxData);
@@ -74,9 +59,18 @@ int main()
         if (RxData[COMMAND_BYTE] == SWITCH_TO_TX_COMMAND)
         {   
             //Prepare transmit buffer with sensor readings
-            ReadBatteryVoltage(TxData);
+            //ReadBatteryVoltage(TxData);
+            counter++;
+            TxData[2] = counter + 1;
+            //TxData[3] = counter + 1;
+            if (counter >= 99)
+            {
+                counter = 0;
+            }
+            
             BMP280_ReadTempAndPressure(TxData);
             GY271_ReadXAndY(TxData);
+            //GPS data comes from the interrupt
             
             NRF24_TXMode();
             TransmitData(TxData);
@@ -122,24 +116,18 @@ void TransmitData(uint8_t *TxData){
 
 void ActOnReceivedData(uint8_t *RxData){
 
-    uint16_t rudder = (uint16_t)((RxData[19] << 8) | RxData[18]);
     uint16_t throttle = (uint16_t)((RxData[3] << 8) | RxData[2]);
-    uint16_t ailerons = (uint16_t)((RxData[7] << 8) | RxData[6]);
+    uint16_t rudder =   (uint16_t)((RxData[5] << 8) | RxData[4]);
+    uint16_t ailerons = (uint16_t)((RxData[28] << 8) | RxData[27]);
     uint16_t elevator = (uint16_t)((RxData[9] << 8) | RxData[8]);
-    uint16_t pot1 = (uint16_t)((RxData[11] << 8) | RxData[10]);
-    uint16_t pot2 = (uint16_t)((RxData[13] << 8) | RxData[12]);
-    uint8_t switch1Up  = RxData[14];
+    uint16_t pot1 =     (uint16_t)((RxData[11] << 8) | RxData[10]);
+    uint16_t pot2 =     (uint16_t)((RxData[13] << 8) | RxData[12]);
+    uint8_t switch1Up  =   RxData[14];
     uint8_t switch1Down  = RxData[15];
-    uint8_t switch2Up  = RxData[16];
+    uint8_t switch2Up  =   RxData[16];
     uint8_t switch2Down  = RxData[17];
 
-    if (rudder >= 50 && rudder <= 1000)
-    {
-        double percent = rudder;
-        ConvertToPercentage(&percent);
-        servo2_set_percentage(percent);
- 
-    }
+
     
     if (throttle >= 50 && throttle <= 1000)
     {
@@ -149,18 +137,26 @@ void ActOnReceivedData(uint8_t *RxData){
 
     }
 
+    if (rudder >= 50 && rudder <= 1000)
+    {
+        double percent = rudder;
+        ConvertToPercentage(&percent);
+        //servo1_set_percentage(percent);
+ 
+    }
+    
     if (ailerons >= 50 && ailerons <= 1000)
     {
         double percent = ailerons;
         ConvertToPercentage(&percent);
-        //servo3_set_percentage(percent);
+        servo2_set_percentage(percent);
     }
     
     if (elevator >= 50 && elevator <= 1000)
     {
         double percent = elevator;
         ConvertToPercentage(&percent);
-        //servo4_set_percentage(percent);
+        //servo2_set_percentage(percent);
     }
 
     /*
@@ -196,8 +192,8 @@ ReadBatteryVoltage(uint8_t *TxData){
 
     float voltage = (analogRead(BATTERY_MONITOR_PIN) / 1023.0) * REFERENCE_VOLTAGE * VOLTAGE_UPSCALE_FACTOR;
 
-    TxData[2] = voltage; //integer number (Heltal)
-    TxData[3] = (voltage - TxData[2]) * 100; //Decimal number
+    TxData[BAT_VOLTAGE_WHOLE]   = voltage; //integer number (Heltal)
+    TxData[BAT_VOLTAGE_DECIMAL] = (voltage - TxData[2]) * 100; //Decimal number
 }
 
 void init_RX(){
@@ -205,5 +201,5 @@ void init_RX(){
 }
 
 void updateTxDataWithGps(uint8_t data){
-    TxData[5] = data;
+    //TxData[5] = data;
 }

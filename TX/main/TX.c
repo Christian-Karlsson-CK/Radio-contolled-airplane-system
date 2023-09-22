@@ -46,6 +46,8 @@ void app_main(void)
         0b00000
     };
 
+    int receptionCounter = 0;
+
     //NRF24_RXMode(&spi_device_handle);
     
     uint8_t TX_RX_Switch_counter = 0; //This counter is used to switch between RX and TX mode. TX mode sends all analog stick and potentiometer values.
@@ -58,7 +60,7 @@ void app_main(void)
         /*
         if(!ReceiveData(&spi_device_handle, RxData))
             {   
-                ESP_LOGI(TAG, "NO MessageXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+                ESP_LOGI(TAG, "NO MessageXXXXXXXXXXXXXXX");
                 vTaskDelay(pdMS_TO_TICKS(10));
             }
             else
@@ -68,43 +70,50 @@ void app_main(void)
                 uint8_t whole = RxData[3];
                 uint8_t decimal = RxData[4];
 
-                uint8_t gps1 = RxData[5];
-                uint8_t gps2 = RxData[6];
+                //uint8_t groundSpeed_whole = RxData[6];
+                //uint8_t groundSpeed_decimal = RxData[7];
 
-                lcd_set_cursor(0,0);
-                lcd_printf("%.2u.%.2uV", whole, decimal);
+                //uint8_t token = RxData[8];
 
-                lcd_set_cursor(0,1);
-                lcd_printf("%c, %c", gps1, gps2);
+                //uint8_t dhopWhole = RxData[10];
+                //uint8_t dhopDecimal = RxData[];
+
+                uint8_t inter = RxData[16];
+
+                uint8_t gpsData0 = RxData[17];
+                uint8_t gpsData0inif = RxData[18];
+                uint8_t gpsData1inif = RxData[19];
+                uint8_t gpsData2inif = RxData[20];
+                uint8_t gpsData3inif = RxData[21];
+                uint8_t gpsData4inif = RxData[22];
+                uint8_t gpsData5inif = RxData[23];
+
+                //uint8_t fix = RxData[13];
+
+                //uint8_t ext = RxData[16];
+
+                uint8_t latitude_DEG = RxData[GPS_LATITUDE_DEGREES];
+                uint8_t latitude_MIN = RxData[GPS_LATITUDE_MIN];
+                uint8_t latitude_SEC = RxData[GPS_LATITUDE_SEC];
+                uint8_t latitude_DIR = RxData[GPS_LATITUDE_DIR];
+
+                uint8_t longitude_DEG = RxData[GPS_LONGITUDE_DEGREES];
+                uint8_t longitude_MIN = RxData[GPS_LONGITUDE_MIN];
+                uint8_t longitude_SEC = RxData[GPS_LONGITUDE_SEC];
+                uint8_t longitude_DIR = RxData[GPS_LONGITUDE_DIR];
+
+                uint8_t fix = RxData[GPS_FIX];
+
+                uint8_t sat = RxData[GPS_SATELLITE_COUNT];
+
+                uint8_t kmph = RxData[GPS_GROUND_SPEED_KMPH];
+
+                uint16_t altitude = (uint16_t)(((RxData[GPS_ALTITUDE_MSB]) << 8) | RxData[GPS_ALTITUDE_LSB]);
+                    //altitude |= (((int16_t)RxData[GPS_ALTITUDE_LSB]) << 0);
+                    //altitude |= (((int16_t)RxData[GPS_ALTITUDE_MSB]) << 8);
+
                 
-                vTaskDelay(pdMS_TO_TICKS(10));
 
-            }
-            */
-
-        /*************************************************************************************************/
-
-        /*************************************************************************************************/
-        //GY-271 TEST:
-        /*
-        if(!ReceiveData(&spi_device_handle, RxData))
-            {   
-                ESP_LOGI(TAG, "NO MessageXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-                vTaskDelay(pdMS_TO_TICKS(10));
-            }
-            else
-            {
-                ESP_LOGI(TAG, "Message Received!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
-                uint8_t whole = RxData[3];
-                uint8_t decimal = RxData[4];
-
-
-                int16_t heading = 0;
-                    heading |= (((int16_t)RxData[30]) << 8);
-                    heading |= (((int16_t)RxData[29]) << 0);
-
-                //uint16_t bmp280 = (uint16_t)((RxData[9] << 8) | RxData[8]);
                 
                 lcd_clear();
                 vTaskDelay(pdMS_TO_TICKS(100));
@@ -119,21 +128,43 @@ void app_main(void)
                     lcd_printf("%.2u.%.1uV", whole, decimal);
                 }
 
-                lcd_set_cursor(0,1);
-                lcd_printf("%d", z);
-                lcd_set_cursor(6,1);
-                lcd_printf("%d", z1);
-                //lcd_set_cursor(11,1);
-                //lcd_printf("%d", z1);
+                //lcd_set_cursor(0,1);
+                //lcd_printf("S:%u.%u", groundSpeed_whole, groundSpeed_decimal);
 
-                lcd_set_cursor(7,0);
-                lcd_printf("%d", heading);
+                //lcd_set_cursor(6,0);
+                //lcd_printf("I:%c", inter);
+
+                lcd_set_cursor(6,0);
+                lcd_printf("G:%u", kmph);
+
+                lcd_set_cursor(9,0);
+                lcd_printf("LAS:%u", latitude_SEC);
+
+                lcd_set_cursor(9,1);
+                lcd_printf("LOS:%u", longitude_SEC);
+
+                lcd_set_cursor(0,1);
+                lcd_printf("ALT:%uM", altitude);
+
+                //lcd_set_cursor(14,0);
+                //lcd_printf("%c", gpsData0);
+
+                //lcd_set_cursor(10,1);
+                //lcd_printf("%c%c%c%c%c%c", gpsData0inif, gpsData1inif, gpsData2inif, gpsData3inif, gpsData4inif, gpsData5inif);
+
+                //lcd_set_cursor(0,1);
+                //lcd_printf("ALT:%u", altitude);
+
+                //lcd_set_cursor(9,0);
+                //lcd_printf("LSB:%u", RxData[GPS_ALTITUDE_LSB]);
+                //lcd_set_cursor(9,1);
+                //lcd_printf("MSB:%u", RxData[GPS_ALTITUDE_MSB]);
                 
-                vTaskDelay(pdMS_TO_TICKS(100));
-                
+                vTaskDelay(pdMS_TO_TICKS(1000));
 
             }
-        */
+            */
+
         /*************************************************************************************************/
 
         /*REGULAR CODE*************************************************************************************/
@@ -165,46 +196,106 @@ void app_main(void)
             while (!ReceiveData(&spi_device_handle, RxData) && tries < 5)
             {   
                 ESP_LOGI(TAG, "NO MessageXXXXXXXXXXXXX");
-                vTaskDelay(pdMS_TO_TICKS(0.7));
+                vTaskDelay(pdMS_TO_TICKS(0.5));
                 tries++;
+                
             }
-            if (tries <= 5)
-            {
+            if (tries < 5)
+            {   
+                //lcd_clear();
                 ESP_LOGI(TAG, "Message Received!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                receptionCounter++;
+                uint8_t whole = RxData[BAT_VOLTAGE_WHOLE];
+                uint8_t decimal = RxData[BAT_VOLTAGE_DECIMAL];
 
-                uint8_t whole = RxData[3];
-                uint8_t decimal = RxData[4];
+                int16_t x = 0;
+                    x |= (((int16_t)RxData[MAGNETIC_X_MSB]) << 0);
+                    x |= (((int16_t)RxData[MAGNETIC_X_LSB]) << 8);
+                   
+                int16_t y = 0;
+                    y |= (((int16_t)RxData[MAGNETIC_Y_LSB]) << 0);
+                    y |= (((int16_t)RxData[MAGNETIC_Y_MSB]) << 8);
 
-                int32_t bmp280_temp = 0;
+                uint32_t bmp280_pressure = 0;
+                    bmp280_pressure |= (((uint32_t)RxData[PRESSURE_LSB_0]) << 0);
+                    bmp280_pressure |= (((uint32_t)RxData[PRESSURE_MID_8]) << 8);
+                    bmp280_pressure |= (((uint32_t)RxData[PRESSURE_MID_16]) << 16);
+                    bmp280_pressure |= (((uint32_t)RxData[PRESSURE_MSB_24]) << 24);
+
+                /*int32_t bmp280_temp = 0;
                     bmp280_temp |= (((int32_t)RxData[11]) << 24);
                     bmp280_temp |= (((int32_t)RxData[10]) << 16);
                     bmp280_temp |= (((int32_t)RxData[9]) << 8);
                     bmp280_temp |= (((int32_t)RxData[8]) << 0);
-
-                uint32_t bmp280_pressure = 0;
-                    bmp280_pressure |= (((uint32_t)RxData[15]) << 24);
-                    bmp280_pressure |= (((uint32_t)RxData[14]) << 16);
-                    bmp280_pressure |= (((uint32_t)RxData[13]) << 8);
-                    bmp280_pressure |= (((uint32_t)RxData[12]) << 0);
+                */
+                
 
                 //int16_t heading = 0;
                 //    heading |= (((int16_t)RxData[17]) << 8);
                 //    heading |= (((int16_t)RxData[16]) << 0);
 
-                int16_t x = 0;
-                    x |= (((int16_t)RxData[17]) << 8);
-                    x |= (((int16_t)RxData[16]) << 0);
-                
-                int16_t y = 0;
-                    y |= (((int16_t)RxData[19]) << 8);
-                    y |= (((int16_t)RxData[18]) << 0);
+                //HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                uint8_t latitude_DEG = RxData[GPS_LATITUDE_DEGREES];
+                uint8_t latitude_MIN = RxData[GPS_LATITUDE_MIN];
+                uint8_t latitude_SEC = RxData[GPS_LATITUDE_SEC];
+                uint8_t latitude_DIR = RxData[GPS_LATITUDE_DIR];
 
-                
+                uint8_t longitude_DEG = RxData[GPS_LONGITUDE_DEGREES];
+                uint8_t longitude_MIN = RxData[GPS_LONGITUDE_MIN];
+                uint8_t longitude_SEC = RxData[GPS_LONGITUDE_SEC];
+                uint8_t longitude_DIR = RxData[GPS_LONGITUDE_DIR];
+
+                uint8_t fix = RxData[GPS_FIX];
+
+                uint8_t sat = RxData[GPS_SATELLITE_COUNT];
+
+                uint8_t kmph = RxData[GPS_GROUND_SPEED_KMPH];
+
+                uint16_t altitude_GPS = (uint16_t)(((RxData[GPS_ALTITUDE_MSB]) << 8) | RxData[GPS_ALTITUDE_LSB]);
+
                 float heading = CalculateHeading(x, y); 
 
-                double altitude = CalculateAltitude(bmp280_pressure);
-                
+                double altitude_BMP280 = CalculateAltitude(bmp280_pressure);
 
+                //lcd_clear();
+                //vTaskDelay(pdMS_TO_TICKS(100));
+
+                //lcd_set_cursor(0,1);
+                //lcd_printf("S:%u.%u", groundSpeed_whole, groundSpeed_decimal);
+
+                //lcd_set_cursor(6,0);
+                //lcd_printf("I:%c", inter);
+
+                //lcd_set_cursor(6,0);
+                //lcd_printf("G:%u", kmph);
+
+                lcd_set_cursor(9,0);
+                lcd_printf("LAS:%u", latitude_DEG);
+
+                lcd_set_cursor(9,1);
+                lcd_printf("LOS:%u", longitude_DEG);
+
+                lcd_set_cursor(0,1);
+                lcd_printf("ALT:%uM", altitude_GPS);
+
+                //lcd_set_cursor(14,0);
+                //lcd_printf("%c", gpsData0);
+
+                //lcd_set_cursor(10,1);
+                //lcd_printf("%c%c%c%c%c%c", gpsData0inif, gpsData1inif, gpsData2inif, gpsData3inif, gpsData4inif, gpsData5inif);
+
+                //lcd_set_cursor(0,1);
+                //lcd_printf("ALT:%u", altitude_BMP280);
+
+                //lcd_set_cursor(9,0);
+                //lcd_printf("LSB:%u", RxData[GPS_ALTITUDE_LSB]);
+                //lcd_set_cursor(9,1);
+                //lcd_printf("MSB:%u", RxData[GPS_ALTITUDE_MSB]);
+
+                //UNTIL HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                
+                
+                
                 lcd_set_cursor(0,0);
                 if ((whole > 99) | (decimal > 99))
                 {
@@ -214,16 +305,20 @@ void app_main(void)
                     decimal /= 10;
                     lcd_printf("%.2u.%.1uV", whole, decimal);
                 }
+
                 
                 //lcd_set_cursor(6,0);
-                //lcd_printf("TEMP:%dM", bmp280_temp);
+                //lcd_printf("R:%d", receptionCounter);
 
-                lcd_set_cursor(0,1);
-                lcd_printf("ALT:%dM", (int)altitude);
+                //lcd_set_cursor(5,1);
+                //lcd_printf("     ");
 
-                lcd_set_cursor(10,1);
-                lcd_printf("H:%d", (int)heading);
-                
+                //lcd_set_cursor(0,1);
+                //lcd_printf("ALT:%dM", (int)altitude_BMP280);
+
+                //lcd_set_cursor(10,1);
+                //lcd_printf("H:%d", (int)heading);
+                vTaskDelay(pdMS_TO_TICKS(10));
             }
             
             tries = 0;
@@ -308,12 +403,13 @@ void ReadAllAnalog(uint8_t *TxData){
     uint8_t switch2Up =   gpio_get_level(PIN_SWITCH2_UP);
     uint8_t switch2Down = gpio_get_level(PIN_SWITCH2_DOWN);
 
-    TxData[18] =  (uint8_t)(rudder & 0xFF); 
-    TxData[19] =  (uint8_t)(rudder >> 8);
+    
     TxData[2] =  (uint8_t)(throttle & 0xFF);
     TxData[3] =  (uint8_t)(throttle >> 8);
-    TxData[6] =  (uint8_t)(ailerons & 0xFF);
-    TxData[7] =  (uint8_t)(ailerons >> 8);
+    TxData[4] =  (uint8_t)(rudder & 0xFF); 
+    TxData[5] =  (uint8_t)(rudder >> 8);
+    TxData[27] =  (uint8_t)(ailerons & 0xFF);
+    TxData[28] =  (uint8_t)(ailerons >> 8);
     TxData[8] =  (uint8_t)(elevator & 0xFF);
     TxData[9] =  (uint8_t)(elevator >> 8);
     TxData[10] = (uint8_t)(pot1 & 0xFF);
@@ -326,8 +422,8 @@ void ReadAllAnalog(uint8_t *TxData){
     TxData[17] = switch2Down;
 
     /*
-    uint16_t rudderT = (uint16_t)((TxData[3] << 8) | TxData[2]);
-    uint16_t throttleT = (uint16_t)((TxData[5] << 8) | TxData[4]);
+    uint16_t rudderT = (uint16_t)((TxData[5] << 8) | TxData[4]);
+    uint16_t throttleT = (uint16_t)((TxData[3] << 8) | TxData[2]);
     uint16_t aileronsT = (uint16_t)((TxData[7] << 8) | TxData[6]);
     uint16_t elevatorT = (uint16_t)((TxData[9] << 8) | TxData[8]);
     uint16_t pot1T = (uint16_t)((TxData[11] << 8) | TxData[10]);
@@ -338,10 +434,10 @@ void ReadAllAnalog(uint8_t *TxData){
     ESP_LOGI(TAG, "Pot1: %u, Pot2: %u", pot1T, pot2T);
     ESP_LOGI(TAG, "sw1Up: %u, sw1Down: %u", TxData[14], TxData[15]);
     ESP_LOGI(TAG, "sw2Up: %u, sw2Down: %u", TxData[16], TxData[17]);
-    */
-
-    //vTaskDelay(pdMS_TO_TICKS(10));
     
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    */
     
 }
 

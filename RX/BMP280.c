@@ -205,15 +205,15 @@ void BMP280_ReadTempAndPressure(uint8_t *TxData){
 	}
 
     //Add temperature and pressure to transmit buffer.
-    TxData[7] = ((int32_t)bmp280_temp >> 0);
-    TxData[8] = ((int32_t)bmp280_temp >> 8);
-    TxData[9] = ((int32_t)bmp280_temp >> 16);
-    TxData[10] = ((int32_t)bmp280_temp >> 24);
+    //TxData[7] = ((int32_t)bmp280_temp >> 0);
+    //TxData[8] = ((int32_t)bmp280_temp >> 8);
+    //TxData[9] = ((int32_t)bmp280_temp >> 16);
+    //TxData[10] = ((int32_t)bmp280_temp >> 24);
 
-    TxData[11] = ((uint32_t)bmp280_pressure >> 0);
-    TxData[12] = ((uint32_t)bmp280_pressure >> 8);
-    TxData[13] = ((uint32_t)bmp280_pressure >> 16);
-    TxData[14] = ((uint32_t)bmp280_pressure >> 24);
+    TxData[PRESSURE_LSB_0]  = ((uint32_t)bmp280_pressure >> 0);
+    TxData[PRESSURE_MID_8]  = ((uint32_t)bmp280_pressure >> 8);
+    TxData[PRESSURE_MID_16] = ((uint32_t)bmp280_pressure >> 16);
+    TxData[PRESSURE_MSB_24] = ((uint32_t)bmp280_pressure >> 24);
 
 }
 

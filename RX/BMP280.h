@@ -4,8 +4,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdio.h>
-//#include <stdint.h>
-//#include "i2c.h"
+#include "TxData.h"
 
 void I2C_init();
 

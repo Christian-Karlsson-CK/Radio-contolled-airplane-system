@@ -168,11 +168,11 @@ void GY271_ReadXAndY(uint8_t *TxData){
 	//Add heading to transmit buffer.
     //TxData[15] = ((int16_t)heading >> 0);
 
-    TxData[15] = ((int16_t)x >> 0);
-    TxData[16] = ((int16_t)x >> 8);
-
-    TxData[17] = ((int16_t)y >> 0);
-    TxData[18] = ((int16_t)y >> 8);
+    TxData[MAGNETIC_X_LSB] = ((int16_t)x >> 0);
+    TxData[MAGNETIC_X_MSB] = ((int16_t)x >> 8);
+    
+    TxData[MAGNETIC_Y_LSB] = ((int16_t)y >> 0);
+    TxData[MAGNETIC_Y_MSB] = ((int16_t)y >> 8);
 
 }
 

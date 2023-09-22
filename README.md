@@ -43,12 +43,12 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
 7.3 Wrote necessary LCD functions for esp32 and confirmed that they do work properly.  
 8. Designed a custom circuit board for the transmitter, accommodating components such as joysticks, MCU, on/off button, switches, and more.  
 8.1 Added an GY-BMP280 module that can measure temperature and atmospheric pressure. With the atomspheric pressure I can calculate the airplanes altitude and display on the LCD-display on the remote control.  
-8.2 Add an GY-271 Compass module and read the bearing value.  
+8.2 Added an GY-271 Compass module and read the bearing value.  
+9. Added an GY-NEOM6MV2 GPS module on the airplane. Latitude, longitude, altitude, ground speed, fix and satellite count is being sent to the TX radio controller.    
 
 
 **TODO:**   
-9. Implement additional functions like a arming function, trims, buzzer etc.  
-10. (OPTIONAL) Explore the integration of GPS functionality into the system.  
+10. Implement additional functions like a arming function, trims, buzzer etc.  
 11. Implement a Return-To-Home function.  
 
 **MAIN PROBLEMS:**  
@@ -60,3 +60,5 @@ Similarly, when pulling the joystick's x-axis to the right, both the x and y-axi
 The GPIO 13 on the ESP32 was initially JTAG configured, requiring a reset to function as a normal GPIO. Configuring it as an output and setting it to logical HIGH resulted in a reading of ~2.84 volts with a multimeter, causing issues with the LCD. This problem was only identified after extensive troubleshooting including the use of a multimeter, which included accidentally damaging one ESP32 module.
 
 A significant challenge encountered was that the NRF24L01 always returns the FIFO_STATUS register first with every new command though the SPI. When the FIFO_STATUS is empty, it returns a decimal value of 14. Identifying and understanding this behavior required a substantial amount of time and effort.
+
+There seem to be disturbances in certain bytes in the TxData[32] array when sending from Rc controller to the airplane.

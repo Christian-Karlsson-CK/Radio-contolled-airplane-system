@@ -9,14 +9,6 @@
 #define RANGE		(TIME_VALUE*0.0482)
 // (TIME_VALUE*0.025)
 
-/*
-#define TIME_VALUE1   (200)   // Assuming an 8-bit timer
-#define RESET_VALUE1  (256 - TIME_VALUE1)
-#define STOP_VALUE1	(TIME_VALUE1*0.076)
-#define RANGE1		(TIME_VALUE1*0.0482)
-*/
-
-
 ISR(TIMER1_OVF_vect)
 {
 	TCNT1 = RESET_VALUE;
@@ -34,32 +26,9 @@ ISR(TIMER1_COMPB_vect)
 {
 	PORT_2 &= ~(1<<PIN_2);
 }
-
-
-/*
-ISR(TIMER2_OVF_vect)
-{
-	//TCNT2 = RESET_VALUE1;
- 
-	PORT_3 |= (1<<PIN_3);
-}
-
-
-ISR(TIMER2_COMPA_vect)
-{
-	PORT_3 &= ~(1<<PIN_3);
-}
- 
-ISR(TIMER2_COMPB_vect)
-{
-	PORT_4 &= ~(1<<PIN_4);
-}
-*/
-
  
 void init_servo(void)
 {
-	
 	// Config pins as output
 	DDR_1 |= (1<<PIN_1);
 	DDR_2 |= (1<<PIN_2);
@@ -74,9 +43,6 @@ void init_servo(void)
 	
 	servo1_set_percentage(0);
 	servo2_set_percentage(0);
-
-	//servo3_set_percentage(0);
-	//servo4_set_percentage(0);
 	
 }
  

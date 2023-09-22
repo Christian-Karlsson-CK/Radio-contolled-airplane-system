@@ -15,8 +15,8 @@
 #define PIN_1	PIN_NUM_THROTTLE
 #define DDR_1	DDRD
  
-#define PORT_2	PORTB
-#define PIN_2	PIN_NUM_RUDDER
+#define PORT_2	PORTD 
+#define PIN_2	PIN_NUM_AILERONS
 #define DDR_2	DDRB
 
 //Servo 3-4
