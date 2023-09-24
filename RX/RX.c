@@ -4,53 +4,26 @@ volatile uint8_t TxData[32];
 
 int main()
 {   
-    //volatile millis_t milliSecsSinceLastCheck = 0;
-
     init_RX();
-
     init_servo();
     uart_init();
-    //millis_init();
-    sei(); // Enable global interrupts
-
     lcd_init();
-
     SPI_init();
-
     I2C_init();
-
     BMP280_init();
     GY271_init();
-
-    
     NRF24_Init();
     NRF24_RXMode();
     //NRF24_TXMode();
 
+    sei(); // Enable global interrupts
+
     uint8_t RxData[32];
-    uint8_t counter = 0;
+    uint8_t counter = 0; //Testing
+    uint8_t receivecounter = 0; //Testing
 
     while (1) {
-        
-        /*************************************************************************************************/
-        //GY-271 TEST:
-
-        /*
-        counter++;
-        //ReadBatteryVoltage(TxData);
-        TxData[2] = counter + 1;
-        TxData[3] = counter + 1;
-
-
-        TransmitData(TxData);
-
-        
-        _delay_ms(2000);
-        */
-        /*************************************************************************************************/
-
         /*REGULAR CODE*************************************************************************************/
-        
         
         ReceiveData(RxData);
 
@@ -60,20 +33,21 @@ int main()
         {   
             //Prepare transmit buffer with sensor readings
             //ReadBatteryVoltage(TxData);
-            counter++;
-            TxData[2] = counter + 1;
-            //TxData[3] = counter + 1;
-            if (counter >= 99)
+            receivecounter++; //Testing
+            TxData[2] = receivecounter; //Testing
+
+            if (receivecounter >= 99)
             {
-                counter = 0;
+                receivecounter = 0;
             }
             
             BMP280_ReadTempAndPressure(TxData);
             GY271_ReadXAndY(TxData);
             //GPS data comes from the interrupt
-            
+
             NRF24_TXMode();
             TransmitData(TxData);
+            _delay_ms(1);
             NRF24_RXMode();
         }
         _delay_ms(5);// 41 seems to be good delay
@@ -117,8 +91,8 @@ void TransmitData(uint8_t *TxData){
 void ActOnReceivedData(uint8_t *RxData){
 
     uint16_t throttle = (uint16_t)((RxData[3] << 8) | RxData[2]);
-    uint16_t rudder =   (uint16_t)((RxData[5] << 8) | RxData[4]);
-    uint16_t ailerons = (uint16_t)((RxData[28] << 8) | RxData[27]);
+    uint16_t rudder =   (uint16_t)((RxData[19] << 8) | RxData[18]);
+    uint16_t ailerons = (uint16_t)((RxData[5] << 8) | RxData[4]);
     uint16_t elevator = (uint16_t)((RxData[9] << 8) | RxData[8]);
     uint16_t pot1 =     (uint16_t)((RxData[11] << 8) | RxData[10]);
     uint16_t pot2 =     (uint16_t)((RxData[13] << 8) | RxData[12]);
@@ -198,8 +172,4 @@ ReadBatteryVoltage(uint8_t *TxData){
 
 void init_RX(){
     BIT_CLEAR(DDRC, BATTERY_MONITOR_PIN);
-}
-
-void updateTxDataWithGps(uint8_t data){
-    //TxData[5] = data;
 }

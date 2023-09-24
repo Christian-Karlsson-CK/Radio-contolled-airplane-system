@@ -15,31 +15,31 @@
 #include "GPIO_PINS.h"
 
 //Common
-void SPI_init(spi_device_handle_t *spi_handle);
+void SPI_init();
 
 void CS_Select();
 void CS_Unselect();
 void CE_Enable();
 void CE_Disable();
 
-void NRF24_WriteRegister(uint8_t, uint8_t, spi_device_handle_t*);
-void NRF24_WriteRegisterMulti(uint8_t, uint8_t*, spi_device_handle_t*, int);
+void NRF24_WriteRegister(uint8_t, uint8_t);
+void NRF24_WriteRegisterMulti(uint8_t, uint8_t*, int);
 
-uint8_t NRF24_ReadReg(uint8_t reg, spi_device_handle_t *spi_device_handle);
-void NRF24_ReadRegMulti(uint8_t, uint8_t*, int, spi_device_handle_t*);
+uint8_t NRF24_ReadReg(uint8_t reg);
+void NRF24_ReadRegMulti(uint8_t, uint8_t*, int);
 
-void NRF24_SendCmd (uint8_t, spi_device_handle_t*);
+void NRF24_SendCmd (uint8_t);
 
-void NRF24_Init(spi_device_handle_t*spi_device_handle);
+void NRF24_Init();
 
 //TX
-void NRF24_TXMode(spi_device_handle_t *spi_device_handle);
-uint8_t NRF24_Transmit(uint8_t *payload, spi_device_handle_t* spi_handle);
+void NRF24_TXMode();
+uint8_t NRF24_Transmit(uint8_t *payload);
 
 //RX
-void NRF24_RXMode(spi_device_handle_t *spi_device_handle);
-uint8_t NRF24_RXisDataReady(int pipeNum ,spi_device_handle_t *spi_device_handle);
-void NRF24_Receive(uint8_t *dataStorage, spi_device_handle_t *spi_device_handle);
+void NRF24_RXMode();
+uint8_t NRF24_RXisDataReady(int pipeNum);
+void NRF24_Receive(uint8_t *dataStorage);
 
 /* Memory Map */
 #define CONFIG      0x00

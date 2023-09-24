@@ -15,12 +15,14 @@
 #include "GPIO_PINS.h"
 #include "RxData.h"
 
-#define SWITCH_TO_TX_COMMAND 255
+#define SWITCH_TO_TX_COMMAND 1
 #define NO_COMMAND           0
 
 #define COMMAND_BYTE         6
 
 #define TX_TO_RX_THRESHOLD   40
+
+#define MAX_ATTEMPTS         5
 
 
 //#define RECEIVED_ACKNOWLEDGMENT   123
@@ -39,11 +41,14 @@ typedef struct AnalogReadings
 
 void InitControls();
 
-void TransmitData(uint8_t *TxData, spi_device_handle_t *spi_device_handle);
+void TransmitData(uint8_t *TxData);
 void ReadAllAnalog(uint8_t *TxData);
 
-uint8_t ReceiveData(spi_device_handle_t *spi_device_handle, uint8_t *RxData);
+uint8_t ReceiveData(uint8_t *RxData);
+
+uint8_t listenForIncomingRadioTransmission(uint8_t maxTries);
+void updateLCD();
 
 double CalculateAltitude(uint32_t pressure);
-float CalculateHeading(int16_t x, int16_t y);
+double CalculateHeading(int16_t x, int16_t y);
 

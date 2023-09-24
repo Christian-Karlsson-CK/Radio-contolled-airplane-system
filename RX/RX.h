@@ -21,7 +21,7 @@
 #include "TxData.h"
 //#include "GY_NEO6MV2.h"
 
-#define SWITCH_TO_TX_COMMAND   255
+#define SWITCH_TO_TX_COMMAND   1
 
 #define COMMAND_BYTE           6
 
@@ -43,9 +43,5 @@ void ActOnReceivedData(uint8_t *RxData);
 void TransmitData(uint8_t *TxData);
 
 ReadBatteryVoltage(uint8_t *TxData);
-
-void updateTxDataWithGps(uint8_t data);
-
-
 
 #endif /* _RX_H_ */

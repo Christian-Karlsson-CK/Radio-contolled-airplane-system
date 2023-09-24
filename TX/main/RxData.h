@@ -19,6 +19,11 @@
 #define PRESSURE_MID_16       11   
 #define PRESSURE_MSB_24       12
 
+#define TEMPERTURE_LSB_0        26   //4 byte temperature in degree celsius
+#define TEMPERTURE_MID_8        27
+#define TEMPERTURE_MID_16       28   
+#define TEMPERTURE_MSB_24       29
+
 //GY_NEO6MV2
 #define GPS_FIX               13  //GPS Data
 #define GPS_SATELLITE_COUNT   14

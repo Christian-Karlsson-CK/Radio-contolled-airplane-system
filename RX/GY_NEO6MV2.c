@@ -25,8 +25,6 @@ $GPVTG,  ,T, ,M,0.166,N,0.308,K,A*29
 Example extracting latitude and longitude degrees and minutes 
 4916.46,N    Latitude 49 deg. 16.45 min. North
 12311.12,W   Longitude 123 deg. 11.12 min. West
-
-
 */
 
 
@@ -39,9 +37,7 @@ char gpgga[] = {'$','G','P','G','G','A'};
 char gpvtg[] = {'$','G','P','V','T','G'};
 volatile uint8_t i = 0;
 
-//char* token;
-int fieldNumber = 0;
-float ground_speed_kmph = 0.0;
+uint8_t fieldNumber = 0;
 
 
 ISR(USART_RX_vect) {
@@ -149,30 +145,7 @@ void uart_init(void)
 
     // Set frame format: 8 data bits, 1 stop bit, no parity
     UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
-
-    /*
-    #if USE_2X
-        UCSR0A |= _BV(U2X0);
-    #else
-        UCSR0A &= ~(_BV(U2X0));
-    #endif
-    */
-    //TxData[15] = 123;
 }
-/*
-int uart_putchar(char c) 
-{
-    loop_until_bit_is_set(UCSR0A, UDRE0);
-    UDR0 = c;
-    return(0);
-}
-
-int uart_getchar() 
-{
-    loop_until_bit_is_set(UCSR0A, RXC0);
-    return UDR0;
-}
-*/
 
 
 
