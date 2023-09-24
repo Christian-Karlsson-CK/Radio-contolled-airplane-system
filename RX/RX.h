@@ -19,6 +19,7 @@
 #include "BMP280.h"
 #include "GY_271.h"
 #include "TxData.h"
+#include "RxData.h"
 //#include "GY_NEO6MV2.h"
 
 #define SWITCH_TO_TX_COMMAND   1
@@ -43,5 +44,8 @@ void ActOnReceivedData(uint8_t *RxData);
 void TransmitData(uint8_t *TxData);
 
 ReadBatteryVoltage(uint8_t *TxData);
+
+void getHomeLocation();
+void steerHome();
 
 #endif /* _RX_H_ */

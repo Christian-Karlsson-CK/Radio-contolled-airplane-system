@@ -25,6 +25,9 @@
 //BATTERY MONITOR PORTC
 #define BATTERY_MONITOR_PIN PC0
 
+//BUZZER
+#define BUZZER_PIN PD4
+
 
 #endif /* _UNOR3PINS_H_ */
 

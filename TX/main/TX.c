@@ -137,22 +137,22 @@ void ReadAllAnalog(uint8_t *TxData){
     uint8_t switch2Down = gpio_get_level(PIN_SWITCH2_DOWN);
 
     
-    TxData[2] =  (uint8_t)(throttle);
-    TxData[3] =  (uint8_t)(throttle >> 8);
-    TxData[18] = (uint8_t)(rudder); 
-    TxData[19] = (uint8_t)(rudder >> 8);
-    TxData[4] =  (uint8_t)(ailerons);
-    TxData[5] =  (uint8_t)(ailerons >> 8);
-    TxData[8] =  (uint8_t)(elevator);
-    TxData[9] =  (uint8_t)(elevator >> 8);
-    TxData[10] = (uint8_t)(pot1);
-    TxData[22] = (uint8_t)(pot1 >> 8);
-    TxData[23] = (uint8_t)(pot2);
-    TxData[13] = (uint8_t)(pot2 >> 8);
-    TxData[14] = switch1Up;
-    TxData[15] = switch1Down;
-    TxData[16] = switch2Up;
-    TxData[17] = switch2Down;
+    TxData[THROTTLE_LSB] =  (uint8_t)(throttle);
+    TxData[THROTTLE_MSB] =  (uint8_t)(throttle >> 8);
+    TxData[RUDDER_LSB]   =  (uint8_t)(rudder); 
+    TxData[RUDDER_MSB]   =  (uint8_t)(rudder >> 8);
+    TxData[AILERONS_LSB] =  (uint8_t)(ailerons);
+    TxData[AILERONS_MSB] =  (uint8_t)(ailerons >> 8);
+    TxData[ELEVATOR_LSB] =  (uint8_t)(elevator);
+    TxData[ELEVATOR_MSB] =  (uint8_t)(elevator >> 8);
+    TxData[POT1_LSB] = (uint8_t)(pot1);
+    TxData[POT1_MSB] = (uint8_t)(pot1 >> 8);
+    TxData[POT2_LSB] = (uint8_t)(pot2);
+    TxData[POT2_MSB] = (uint8_t)(pot2 >> 8);
+    TxData[SWITCH1UP] = switch1Up;
+    TxData[SWITCH1DOWM] = switch1Down;
+    TxData[SWITCH2UP] = switch2Up;
+    TxData[SWITCH2DOWM] = switch2Down;
 
     /*
     uint16_t rudderT = (uint16_t)((TxData[5] << 8) | TxData[4]);
@@ -236,7 +236,7 @@ void updateLCD(){
         lcd_printf("BAT=%.2u.%.1u HDG=%u  ", RxData[BAT_VOLTAGE_WHOLE], RxData[BAT_VOLTAGE_DECIMAL], heading);
 
         lcd_set_cursor(0,1);
-        lcd_printf("ALT=%u  KMH=%u    ", altitude_GPS, RxData[GPS_GROUND_SPEED_KMPH]);
+        lcd_printf("ALT=%uM KMH=%u    ", altitude_GPS, RxData[GPS_GROUND_SPEED_KMPH]);
     }
 
     else if (TxData[16] == 1)
@@ -253,7 +253,6 @@ void updateLCD(){
         lcd_set_cursor(0,0);
         lcd_printf("LAT=%u.%u%u%c     ", RxData[GPS_LATITUDE_DEGREES], RxData[GPS_LATITUDE_MIN],
                                          RxData[GPS_LATITUDE_SEC], RxData[GPS_LATITUDE_DIR]);
-
         lcd_set_cursor(0,1);
         lcd_printf("LON=%u.%u%u%c     ", RxData[GPS_LONGITUDE_DEGREES], RxData[GPS_LONGITUDE_MIN], 
                                          RxData[GPS_LONGITUDE_SEC], RxData[GPS_LONGITUDE_DIR]);

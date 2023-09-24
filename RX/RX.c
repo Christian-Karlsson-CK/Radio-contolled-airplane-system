@@ -2,6 +2,21 @@
 
 volatile uint8_t TxData[32];
 
+typedef struct HomeLocation
+{   
+    uint8_t latitude_deg;
+    uint8_t latitude_min;
+    uint8_t latitude_sec;
+    uint8_t latitude_dir;
+    uint8_t longitude_deg;
+    uint8_t longitude_min;
+    uint8_t longitude_sec;
+    uint8_t longitude_dir;
+    bool hasHomeLocation;
+}HomeLocation;
+
+HomeLocation homeLocation;
+
 int main()
 {   
     init_RX();
@@ -28,6 +43,10 @@ int main()
         ReceiveData(RxData);
 
         ActOnReceivedData(RxData);
+
+        if (!homeLocation.hasHomeLocation && TxData[GPS_FIX] == 1)
+            getHomeLocation();
+        
 
         if (RxData[COMMAND_BYTE] == SWITCH_TO_TX_COMMAND)
         {   
@@ -90,48 +109,59 @@ void TransmitData(uint8_t *TxData){
 
 void ActOnReceivedData(uint8_t *RxData){
 
-    uint16_t throttle = (uint16_t)((RxData[3] << 8) | RxData[2]);
-    uint16_t rudder =   (uint16_t)((RxData[19] << 8) | RxData[18]);
-    uint16_t ailerons = (uint16_t)((RxData[5] << 8) | RxData[4]);
-    uint16_t elevator = (uint16_t)((RxData[9] << 8) | RxData[8]);
-    uint16_t pot1 =     (uint16_t)((RxData[11] << 8) | RxData[10]);
-    uint16_t pot2 =     (uint16_t)((RxData[13] << 8) | RxData[12]);
-    uint8_t switch1Up  =   RxData[14];
-    uint8_t switch1Down  = RxData[15];
-    uint8_t switch2Up  =   RxData[16];
-    uint8_t switch2Down  = RxData[17];
-
-
+    uint16_t throttle = (uint16_t)((RxData[THROTTLE_MSB] << 8) | RxData[THROTTLE_LSB]);
+    uint16_t rudder   = (uint16_t)((RxData[RUDDER_MSB]   << 8) | RxData[RUDDER_LSB]);
+    uint16_t ailerons = (uint16_t)((RxData[AILERONS_MSB] << 8) | RxData[AILERONS_LSB]);
+    uint16_t elevator = (uint16_t)((RxData[ELEVATOR_MSB] << 8) | RxData[ELEVATOR_LSB]);
+    uint16_t pot1     = (uint16_t)((RxData[POT1_MSB]     << 8) | RxData[POT1_LSB]);
+    uint16_t pot2     = (uint16_t)((RxData[POT2_MSB]     << 8) | RxData[POT2_LSB]);
+    uint8_t switch1Up    = RxData[SWITCH1UP];
+    uint8_t switch1Down  = RxData[SWITCH1DOWM];
+    uint8_t switch2Up    = RxData[SWITCH2UP];
+    uint8_t switch2Down  = RxData[SWITCH2DOWM];
     
-    if (throttle >= 50 && throttle <= 1000)
+    if (switch1Up) //Return to home
     {
-        double percent = throttle;
-        ConvertToPercentage(&percent);
-        servo1_set_percentage(percent);
+        steerHome();
+    }
+    else{
+        if (throttle >= 50 && throttle <= 1000)
+        {
+            double percent = throttle;
+            ConvertToPercentage(&percent);
+            servo1_set_percentage(percent);
 
+        }
+
+        if (rudder >= 50 && rudder <= 1000)
+        {
+            double percent = rudder;
+            ConvertToPercentage(&percent);
+            //servo1_set_percentage(percent);
+    
+        }
+        
+        if (ailerons >= 50 && ailerons <= 1000)
+        {
+            double percent = ailerons;
+            ConvertToPercentage(&percent);
+            servo2_set_percentage(percent);
+        }
+        
+        if (elevator >= 50 && elevator <= 1000)
+        {
+            double percent = elevator;
+            ConvertToPercentage(&percent);
+            //servo2_set_percentage(percent);
+        }
     }
 
-    if (rudder >= 50 && rudder <= 1000)
-    {
-        double percent = rudder;
-        ConvertToPercentage(&percent);
-        //servo1_set_percentage(percent);
- 
-    }
+    //BIT_SET(PORTD, BUZZER_PIN);
+    if (switch1Down)
+        BIT_SET(PORTD, BUZZER_PIN);
+    else
+        BIT_CLEAR(PORTD, BUZZER_PIN);
     
-    if (ailerons >= 50 && ailerons <= 1000)
-    {
-        double percent = ailerons;
-        ConvertToPercentage(&percent);
-        servo2_set_percentage(percent);
-    }
-    
-    if (elevator >= 50 && elevator <= 1000)
-    {
-        double percent = elevator;
-        ConvertToPercentage(&percent);
-        //servo2_set_percentage(percent);
-    }
 
     /*
     lcd_clear();
@@ -172,4 +202,22 @@ ReadBatteryVoltage(uint8_t *TxData){
 
 void init_RX(){
     BIT_CLEAR(DDRC, BATTERY_MONITOR_PIN);
+    BIT_SET(DDRD, BUZZER_PIN);
+    homeLocation.hasHomeLocation = false;
 }
+
+void getHomeLocation(){
+    homeLocation.latitude_deg = TxData[GPS_LATITUDE_DEGREES];
+    homeLocation.latitude_min = TxData[GPS_LATITUDE_MIN];
+    homeLocation.latitude_sec = TxData[GPS_LATITUDE_SEC];
+    homeLocation.latitude_dir = TxData[GPS_LATITUDE_DIR];
+
+    homeLocation.longitude_deg = TxData[GPS_LONGITUDE_DEGREES];
+    homeLocation.longitude_min = TxData[GPS_LONGITUDE_MIN];
+    homeLocation.longitude_sec = TxData[GPS_LONGITUDE_SEC];
+    homeLocation.longitude_dir = TxData[GPS_LONGITUDE_DIR];
+
+    homeLocation.hasHomeLocation = true;
+}
+
+void steerHome(){}

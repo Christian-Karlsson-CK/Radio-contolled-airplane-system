@@ -45,10 +45,10 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
 8.1 Added an GY-BMP280 module that can measure temperature and atmospheric pressure. With the atomspheric pressure I can calculate the airplanes altitude and display on the LCD-display on the remote control.  
 8.2 Added an GY-271 Compass module and read the bearing value.  
 9. Added an GY-NEOM6MV2 GPS module on the airplane. Latitude, longitude, altitude, ground speed, fix and satellite count is being sent to the TX radio controller.    
+10. Implemented an buzzer function.  
 
 
 **TODO:**   
-10. Implement additional functions like a arming function, trims, buzzer etc.  
 11. Implement a Return-To-Home function.  
 
 **MAIN PROBLEMS:**  

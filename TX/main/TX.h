@@ -14,6 +14,7 @@
 #include "lcd.h"
 #include "GPIO_PINS.h"
 #include "RxData.h"
+#include "TxData.h"
 
 #define SWITCH_TO_TX_COMMAND 1
 #define NO_COMMAND           0
