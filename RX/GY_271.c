@@ -178,10 +178,10 @@ void GY271_ReadXAndY(uint8_t *TxData){
 
 int16_t GY271_CalcHeading(int16_t x, int16_t y)
 {      
-       float heading = atan2((double)y,(double)x)*180.0/M_PI;
+       double heading = atan2(y,x)*180.0/M_PI;
        heading = (heading < 0)? 360 + heading:heading;
        
-	return (int16_t)heading;
+	return heading;
 }
 
 

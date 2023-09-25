@@ -25,6 +25,12 @@ $GPVTG,  ,T, ,M,0.166,N,0.308,K,A*29
 Example extracting latitude and longitude degrees and minutes 
 4916.46,N    Latitude 49 deg. 16.45 min. North
 12311.12,W   Longitude 123 deg. 11.12 min. West
+
+Latitude and Longitude different formats:
+Decimal degrees (DD): 41.40338, 2.17403
+Degrees, minutes, and seconds (DMS): 41°24'12.2"N 2°10'26.5"E
+Degrees and decimal minutes (DMM): 41 24.2028, 2 10.4418
+
 */
 
 

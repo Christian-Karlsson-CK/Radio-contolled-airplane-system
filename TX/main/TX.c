@@ -202,8 +202,8 @@ void updateLCD(){
         RxData[BAT_VOLTAGE_DECIMAL] = 0;
 
     int16_t x = 0;
-        x |= (((int16_t)RxData[MAGNETIC_X_MSB]) << 0);
-        x |= (((int16_t)RxData[MAGNETIC_X_LSB]) << 8);
+        x |= (((int16_t)RxData[MAGNETIC_X_LSB]) << 0);
+        x |= (((int16_t)RxData[MAGNETIC_X_MSB]) << 8);
         
     int16_t y = 0;
         y |= (((int16_t)RxData[MAGNETIC_Y_LSB]) << 0);
@@ -229,33 +229,56 @@ void updateLCD(){
     uint16_t heading = (uint16_t)CalculateHeading(x, y);
 
     double altitude_BMP280 = CalculateAltitude(bmp280_pressure);
+
+
+    uint16_t test = 0;
+        test |= (((uint16_t)RxData[30]) << 0);
+        test |= (((uint16_t)RxData[31]) << 8);
+
+    uint8_t test2 = RxData[32];
     
-    if (TxData[16] == 0 && TxData[17] == 0)
+    if (TxData[SWITCH2UP] == 0 && TxData[SWITCH2DOWM] == 0)
     {
         lcd_set_cursor(0,0);
         lcd_printf("BAT=%.2u.%.1u HDG=%u  ", RxData[BAT_VOLTAGE_WHOLE], RxData[BAT_VOLTAGE_DECIMAL], heading);
 
         lcd_set_cursor(0,1);
-        lcd_printf("ALT=%uM KMH=%u    ", altitude_GPS, RxData[GPS_GROUND_SPEED_KMPH]);
+        if (RxData[GPS_FIX] == 1)
+            lcd_printf("ALT=%uM KMH=%u    ", altitude_GPS, RxData[GPS_GROUND_SPEED_KMPH]);
+        else
+            lcd_printf("---NO GPS FIX---");
     }
 
-    else if (TxData[16] == 1)
+    else if (TxData[SWITCH2UP] == 1)
     {
         lcd_set_cursor(0,0);
         lcd_printf("FIX=%u  CEL=%d.%u  ", RxData[GPS_FIX], temp_whole, temp_decimal);
-
+        
         lcd_set_cursor(0,1);
-        lcd_printf("SAT=%u  PA=%u ", RxData[GPS_SATELLITE_COUNT], bmp280_pressure);
+        lcd_printf("SAT=%u  PA=%u     ", RxData[GPS_SATELLITE_COUNT], bmp280_pressure);  
     }
     
-    else if (TxData[17] == 1)
-    {
-        lcd_set_cursor(0,0);
-        lcd_printf("LAT=%u.%u%u%c     ", RxData[GPS_LATITUDE_DEGREES], RxData[GPS_LATITUDE_MIN],
-                                         RxData[GPS_LATITUDE_SEC], RxData[GPS_LATITUDE_DIR]);
-        lcd_set_cursor(0,1);
-        lcd_printf("LON=%u.%u%u%c     ", RxData[GPS_LONGITUDE_DEGREES], RxData[GPS_LONGITUDE_MIN], 
-                                         RxData[GPS_LONGITUDE_SEC], RxData[GPS_LONGITUDE_DIR]);
+    else if (TxData[SWITCH2DOWM] == 1)
+    {   
+        
+        if (RxData[GPS_FIX] == 1)
+        {
+            lcd_set_cursor(0,0);
+            lcd_printf("LAT=%u.%u%u%c     ", RxData[GPS_LATITUDE_DEGREES], RxData[GPS_LATITUDE_MIN],
+                                            RxData[GPS_LATITUDE_SEC], RxData[GPS_LATITUDE_DIR]);
+            lcd_set_cursor(0,1);
+            lcd_printf("LON=%u.%u%u%c     ", RxData[GPS_LONGITUDE_DEGREES], RxData[GPS_LONGITUDE_MIN], 
+                                            RxData[GPS_LONGITUDE_SEC], RxData[GPS_LONGITUDE_DIR]);
+        }
+        else
+        {
+            lcd_set_cursor(0,0);
+            lcd_printf("----------------");
+            
+            lcd_set_cursor(0,1);
+            lcd_printf("---NO GPS FIX---");    
+        }
+        
     }
     //vTaskDelay(pdMS_TO_TICKS(10));
 }
@@ -266,7 +289,7 @@ double CalculateAltitude(uint32_t pressure){
 }
 
 double CalculateHeading(int16_t x, int16_t y){
-    double heading = atan2((double)y,(double)x)*180.0/M_PI;
+    double heading = atan2(y,x)*180.0/M_PI;
     heading = (heading < 0)? 360 + heading:heading;  
 
     return heading;

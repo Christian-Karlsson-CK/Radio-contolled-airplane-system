@@ -45,7 +45,11 @@ void TransmitData(uint8_t *TxData);
 
 ReadBatteryVoltage(uint8_t *TxData);
 
-void getHomeLocation();
-void steerHome();
+void setHomeLocationInDecimalDegrees();
+void updateCurrentLocationInDecimalDegrees();
+void returnToHome();
+
+double getBearingToHome();
+double calculateHeading();
 
 #endif /* _RX_H_ */
