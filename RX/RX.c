@@ -45,9 +45,9 @@ int main()
         ReceiveData(RxData);
 
         if (!homeLocation.hasHomeLocation && TxData[GPS_FIX] == 1){
-            //setHomeLocationInDecimalDegrees();
-            homeLocation.latitude_DecimalDegrees = 58 + (00 / 60.0) + (6.9 / 3600.0);
-            homeLocation.longitude_DecimalDegrees = 15 + (8 / 60.0) + (54.4 / 3600.0);
+            setHomeLocationInDecimalDegrees();
+            //homeLocation.latitude_DecimalDegrees = 58 + (00 / 60.0) + (6.9 / 3600.0);
+            //homeLocation.longitude_DecimalDegrees = 15 + (8 / 60.0) + (54.4 / 3600.0);
             
             //north representing 0° or 360°
             //east representing 90°
@@ -148,7 +148,7 @@ void ActOnReceivedData(uint8_t *RxData){
         {
             double percent = throttle;
             ConvertToPercentage(&percent);
-            servo1_set_percentage(percent);
+            //servo1_set_percentage(percent);
 
         }
 
@@ -164,14 +164,14 @@ void ActOnReceivedData(uint8_t *RxData){
         {
             double percent = ailerons;
             ConvertToPercentage(&percent);
-            servo2_set_percentage(percent);
+            servo1_set_percentage(percent);
         }
         
         if (elevator >= 50 && elevator <= 1000)
         {
             double percent = elevator;
             ConvertToPercentage(&percent);
-            //servo2_set_percentage(percent);
+            servo2_set_percentage(percent);
         }
     }
     
@@ -214,10 +214,11 @@ void ActOnReceivedData(uint8_t *RxData){
 
 ReadBatteryVoltage(uint8_t *TxData){
 
-    float voltage = (analogRead(BATTERY_MONITOR_PIN) / 1023.0) * REFERENCE_VOLTAGE * VOLTAGE_UPSCALE_FACTOR;
+    float voltage = (analogRead(BATTERY_MONITOR_PIN) / 1023.0) 
+                    * REFERENCE_VOLTAGE * VOLTAGE_UPSCALE_FACTOR;
 
     TxData[BAT_VOLTAGE_WHOLE]   = voltage; //integer number (Heltal)
-    TxData[BAT_VOLTAGE_DECIMAL] = (voltage - TxData[2]) * 100; //Decimal number
+    TxData[BAT_VOLTAGE_DECIMAL] = (voltage - TxData[BAT_VOLTAGE_WHOLE]) * 100; //Decimal number
 }
 
 void init_RX(){
@@ -264,53 +265,104 @@ void returnToHome(){
     bearingToHome += 400; //To get rid of airplane maneuver problems if the bearing home is close to 0/360 degrees.
     currentHeading += 400;
 
-    if (currentHeading > bearingToHome) //Turn left, then how much to turn
-    {   
-        
-        uint16_t difference = currentHeading - bearingToHome;
+    uint16_t altitude_GPS = (uint16_t)(((TxData[GPS_ALTITUDE_MSB]) << 8) | TxData[GPS_ALTITUDE_LSB]);
+    int8_t altitudeCorrectionValue = 0;
 
-        TxData[29] = (uint16_t)difference >> 0;
-        TxData[30] = (uint16_t)difference >> 8;
-        if (difference >= 50)
-            servo2_set_percentage(30);
-
-        else if (difference < 50 && difference > 30)
-            servo2_set_percentage(20);
-        
-        else if (difference <= 30 && difference > 10)
-            servo2_set_percentage(10);
-        
-        else if (difference <= 10 && difference > 5)
-            servo2_set_percentage(5);
-        
-        else if (difference <= 5)
-            servo2_set_percentage(2);
-        
-
+    //Control Speed
+    if (TxData[GPS_GROUND_SPEED_KMPH] < 40) //      Going too slow
+    {
+        //servo3_set_percentage(30); //65% throttle
+    }
+    else if (TxData[GPS_GROUND_SPEED_KMPH] > 60) //  Going to fast
+    {
+        //servo3_set_percentage(-40); //30% throttle
+    }
+    else{
+        //servo3_set_percentage(-20); //40% throttle Cruise speed
     }
 
+
+    //Control Altitude
+    
+    if (altitude_GPS < 100) //Airplane too low
+        altitudeCorrectionValue = -10;
+
+    else if (altitude_GPS > 110) //Airplane to high
+        altitudeCorrectionValue = 10;
+
+    else
+        altitudeCorrectionValue = 0;
+    
+    
+    
+    //Control Direction using Ailerons OR rudder, combined with elevator
     if (currentHeading < bearingToHome) //Turn right, then how much to turn
     {   
         
+        
         uint16_t difference = bearingToHome - currentHeading;
+
         TxData[29] = (uint16_t)difference >> 0;
         TxData[30] = (uint16_t)difference >> 8;
-        if (difference >= 50)
-            servo2_set_percentage(-30);
+        if (difference > 50){
+            servo1_set_percentage(30);
+            servo2_set_percentage(-30 + altitudeCorrectionValue);
+        
+        }
+        else if (difference <= 50 && difference > 30){
+            servo1_set_percentage(20);
+            servo2_set_percentage(-30 + altitudeCorrectionValue);
+        }
 
-        else if (difference < 50 && difference > 30)
-            servo2_set_percentage(-20);
+        else if (difference <= 30 && difference > 10){
+            servo1_set_percentage(10);
+            servo2_set_percentage(-30 + altitudeCorrectionValue);
+        }
+
+        else if (difference <= 10 && difference > 5){
+            servo1_set_percentage(5);
+            servo2_set_percentage(-30 + altitudeCorrectionValue);
+        }
+
+        else if (difference <= 4){
+            servo1_set_percentage(0);
+            servo2_set_percentage(0 + altitudeCorrectionValue);
+        }
+    }
+    
+    else if (currentHeading >= bearingToHome) //Turn left, then how much to turn
+    {   
         
-        else if (difference <= 30 && difference > 10)
-            servo2_set_percentage(-10);
+        uint16_t difference = currentHeading - bearingToHome;
+        TxData[29] = (uint16_t)difference >> 0;
+        TxData[30] = (uint16_t)difference >> 8;
+        if (difference > 50){
+            servo1_set_percentage(-30);
+            servo2_set_percentage(-30 + altitudeCorrectionValue);
         
-        else if (difference <= 10 && difference > 5)
-            servo2_set_percentage(-5);
-        
-        else if (difference <= 5)
-            servo2_set_percentage(-2);
+        }
+        else if (difference <= 50 && difference > 30){
+            servo1_set_percentage(-20);
+            servo2_set_percentage(-30 + altitudeCorrectionValue);
+        }
+
+        else if (difference <= 30 && difference > 10){
+            servo1_set_percentage(-10);
+            servo2_set_percentage(-30 + altitudeCorrectionValue);
+        }
+
+        else if (difference <= 10 && difference > 5){
+            servo1_set_percentage(-5);
+            servo2_set_percentage(-30 + altitudeCorrectionValue);
+        }
+
+        else if (difference <= 4){
+            servo1_set_percentage(0);
+            servo2_set_percentage(0 + altitudeCorrectionValue);
+        }
         
     }
+    
 }
 
 double getBearingToHome(){

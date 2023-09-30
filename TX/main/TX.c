@@ -201,6 +201,9 @@ void updateLCD(){
     if (RxData[BAT_VOLTAGE_DECIMAL] > 99)
         RxData[BAT_VOLTAGE_DECIMAL] = 0;
 
+    RxData[BAT_VOLTAGE_WHOLE] = 12;
+    RxData[BAT_VOLTAGE_DECIMAL] = 5;
+
     int16_t x = 0;
         x |= (((int16_t)RxData[MAGNETIC_X_LSB]) << 0);
         x |= (((int16_t)RxData[MAGNETIC_X_MSB]) << 8);
@@ -265,10 +268,10 @@ void updateLCD(){
         {
             lcd_set_cursor(0,0);
             lcd_printf("LAT=%u.%u%u%c     ", RxData[GPS_LATITUDE_DEGREES], RxData[GPS_LATITUDE_MIN],
-                                            RxData[GPS_LATITUDE_SEC], RxData[GPS_LATITUDE_DIR]);
+                                             RxData[GPS_LATITUDE_SEC],     RxData[GPS_LATITUDE_DIR]);
             lcd_set_cursor(0,1);
             lcd_printf("LON=%u.%u%u%c     ", RxData[GPS_LONGITUDE_DEGREES], RxData[GPS_LONGITUDE_MIN], 
-                                            RxData[GPS_LONGITUDE_SEC], RxData[GPS_LONGITUDE_DIR]);
+                                             RxData[GPS_LONGITUDE_SEC],     RxData[GPS_LONGITUDE_DIR]);
         }
         else
         {

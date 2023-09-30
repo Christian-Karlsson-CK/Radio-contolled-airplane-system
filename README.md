@@ -46,10 +46,15 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
 8.2 Added an GY-271 Compass module and read the bearing value.  
 9. Added an GY-NEOM6MV2 GPS module on the airplane. Latitude, longitude, altitude, ground speed, fix and satellite count is being sent to the TX radio controller.    
 10. Implemented an buzzer function.  
+11. Implemented a Return-To-Home function. (For proper airplane steering, more sensors are need along with proper tuning)  
 
 
 **TODO:**   
-11. Implement a Return-To-Home function.  
+ 12. Add a gyroscope.  
+ 13. Add a Airspeed sensor.  
+ 14. Upgrade from Atmega328p on the airplane to an MCU that has atleast 3 PWM outputs, OR add a PWM module.  
+ 15. Use built in WIFI module on ESP32 to send flight coordinates to Cloud.  
+ 16. Display flightroutes google maps or similar via an app or webpage.  
 
 **MAIN PROBLEMS:**  
 
