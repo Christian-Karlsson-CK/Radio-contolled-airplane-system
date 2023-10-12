@@ -3,24 +3,49 @@ Embedded C
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/3f31e514-5203-45c5-8047-099c538987e7" width="500" height="500">  
 
-The following text outlines my approach to testing, learning, and developing a fully functional radio controlled RC airplane system.
-I will employ the ESP32 as the transmitter (TX) and the Elegoo UNO R3 as the receiver (RX), utilizing a pair of NRF24L01 transceivers.
+**Introduction**  
+The following readme file outlines my approach to testing, learning, and developing a fully functional radio controlled airplane system.  
+I will employ the ESP32 as the transmitter (TX) on the controller and the Elegoo UNO R3 as the receiver (RX) on the airplane, utilizing a pair of NRF24L01 transceivers for radio communication.  
+In the current build the system is fully functional with the communication between the controller and airplane working in both directions. This enables both precise control over the airplanes control surfaces as well as enabling realtime information from the airplane to be displayed on the controllers LCD screen such as the current voltage of the battery, altitude, heading, speed, visible GPS satellites, longitude and latitude and more.  
 
-**Electronic Components:**
+In the project, I'm currently working on a RTH(Return-To-Home) function. This function will autonomously steer the airplane back home to you. Finding the bearing to home is implemented and continously updated as well as most of the autonomous steering logic. The last step is to add a gyroscope so that we can accurately control the airplanes roll, pitch and yaw axis as to not overrotate on any given axis.  
 
-Elegoo UNO R3                                <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/81dbc280-9ac2-4534-98b2-617f00ca8722" width="400" height="400">                                 
-ESP32-WROOM-32 DevkitC v4  
-ESC + Motor  
-2x NRF24L01+ Transceivers  
+
+**Electronic Components:**  
+The list of components have grown quite a lot over the course of the project. Bellow is a list of the most important components.
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/81dbc280-9ac2-4534-98b2-617f00ca8722" width="400" height="400">  
+
+
+**On the airplane:**  
+Elegoo UNO R3 (microcontroller)  
+1x NRF24L01+ Transceiver  
+1x BMP-280 (airpressure & temperature sensor)  
+1x GY-271 (3-axis magnetometer compass)  
+1x GY-NEO6MV2 with a ceramic antenna (GPS)  
+1x ESC  (Electronic speed controller, used to control motor)  
+1x Electric motor  
 2x Servo Ailerons  
 1x Servo Elevator  
 1x Servo Rudder  
+
+
+**On the controller:**  
+ESP32-WROOM-32 DevkitC v4  (microcontroller)  
+1x NRF24L01+ Transceiver  
+1x 1602 LCD display  
 2x Joysticks  
-1x On/Off Switch/Button for Transmitter  
+2x 3-way switches  
+2x Potentiometers  
+1x Power module with On/Off Button for the battery  
 
-In the initial stages of my project, I began by testing the functionality of joysticks and servos on the Elegoo UNO R3 to ensure they operated as intended. As I transitioned to working with the ESP32, I encountered the need to adapt to a different programming environment, as the ESP32 doesn't utilize AVR like the UNO. Instead, it relies on the Espressif IDF framework. To gain familiarity with the ESP32's pin programming, I initiated my learning journey by creating a simple LED blink program.
 
+**In the early stages:**  
+I began by testing the functionality of joysticks and servos on the Elegoo UNO R3 to ensure they operated as intended. As I transitioned to working with the ESP32, I encountered the need to adapt to a different programming environment, as the ESP32 doesn't utilize AVR like the UNO R3. Instead, it relies on the Espressif IDF framework. To gain familiarity with the ESP32's pin programming, I initiated my learning journey by creating a simple LED blink program.
+
+
+**Planing**  
 I've drafted an initial TODO list for my workflow, with the understanding that it will evolve as I gain a deeper understanding of the project requirements and potentially add more functionality. The list is divided into two sections: one for completed tasks (DONE) and another for tasks yet to be tackled (TODO).
+
 
 **DONE:**  
 1. Successfully configured and tested the joystick's analog input with the ESP32 (for testing purposes).  
@@ -55,8 +80,25 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
  12. Add a gyroscope.  
  13. Add a Airspeed sensor.  
  14. Upgrade from Atmega328p on the airplane to an MCU that has atleast 3 PWM outputs, OR add a PWM module.  
- 15. Use built in WIFI module on ESP32 to send flight coordinates to Cloud.  
+ 15. Use built in WIFI module on ESP32 to send flight coordinates to a Cloudservice.  
  16. Display flightroutes google maps or similar via an app or webpage.  
+
+
+
+**Result:**  
+So far I'm very satisfied with the project and it has been a great learning experience. Bellow I would like to present a few pictures of the airplane as well as the controller.
+
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/de396d31-eda9-464e-b436-7c4fca99fbd5" width=50% height=50%>  
+
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/364237dd-cc9a-4c2f-98fc-005221319f82" width=50% height=50%>  
+
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/7908696c-894b-46ea-b56c-403a6aa9a52f" width=50% height=50%>  
+
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/2a552810-6807-40c5-a5ee-77b1afed4c69" width=50% height=50%>  
+
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/2f7a56d4-3a23-4601-a90b-aca4b5db819c" width=50% height=50%>  
+
+
 
 **MAIN PROBLEMS:**  
 
@@ -68,4 +110,10 @@ The GPIO 13 on the ESP32 was initially JTAG configured, requiring a reset to fun
 
 A significant challenge encountered was that the NRF24L01 always returns the FIFO_STATUS register first with every new command though the SPI. When the FIFO_STATUS is empty, it returns a decimal value of 14. Identifying and understanding this behavior required a substantial amount of time and effort.
 
-There seem to be disturbances in certain bytes in the TxData[32] array when sending from Rc controller to the airplane.
+There seem to be disturbances in certain bytes in the TxData[32] array when sending from Rc controller to the airplane.  
+
+
+
+
+
+
