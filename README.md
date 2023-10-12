@@ -1,12 +1,14 @@
 # Radio controlled airplane system
 Embedded C
 
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/3f31e514-5203-45c5-8047-099c538987e7" width="500" height="500">  
+
 The following text outlines my approach to testing, learning, and developing a fully functional radio controlled RC airplane system.
 I will employ the ESP32 as the transmitter (TX) and the Elegoo UNO R3 as the receiver (RX), utilizing a pair of NRF24L01 transceivers.
 
 **Electronic Components:**
 
-Elegoo UNO R3  
+Elegoo UNO R3                                <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/81dbc280-9ac2-4534-98b2-617f00ca8722" width="400" height="400">                                 
 ESP32-WROOM-32 DevkitC v4  
 ESC + Motor  
 2x NRF24L01+ Transceivers  
