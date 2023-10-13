@@ -12,7 +12,8 @@ In the project, I'm currently working on a RTH(Return-To-Home) function. This fu
 
 
 **Electronic Components:**  
-The list of components have grown quite a lot over the course of the project. Bellow is a list of the most important components.
+The list of components have grown quite a lot over the course of the project. Bellow is a list of the most important components.  
+
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/81dbc280-9ac2-4534-98b2-617f00ca8722" width="400" height="400">  
 
 
@@ -98,6 +99,11 @@ So far I'm very satisfied with the project and it has been a great learning expe
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/2f7a56d4-3a23-4601-a90b-aca4b5db819c" width=50% height=50%>  
 
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/1dee5966-1cbb-4364-a7d8-595a3ea70df9" width=50% height=50%>  
+
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/acb2fb59-8a79-4707-b5f8-2bbc9c9f1501" width=50% height=50%>  
+
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/fb5a15d4-4220-4c2a-a64d-4a211aa24efe" width=50% height=50%>  
 
 
 **MAIN PROBLEMS:**  
