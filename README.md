@@ -131,6 +131,10 @@ Bellow I would like to present a few images of the airplane as well as the contr
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/fb5a15d4-4220-4c2a-a64d-4a211aa24efe" width=50% height=50%>  
 
+Schematic of the PCB(Printed circuit board)  
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/050ca8a8-93ce-4f8f-884d-4a8f4bfbebcf" width=50% height=50%>  
+<img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/92c86ec7-d234-4159-b894-85b8b220d25e" width=50% height=50%>  
+
 
  
 
