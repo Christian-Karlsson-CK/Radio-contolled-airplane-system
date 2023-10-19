@@ -3,6 +3,9 @@ Embedded C
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/3f31e514-5203-45c5-8047-099c538987e7" width="500" height="500">  
 
+ 
+
+ 
 **Introduction**  
 The following readme file outlines my approach to testing, learning, and developing a fully functional radio controlled airplane system.  
 I will employ the ESP32 as the transmitter (TX) on the controller and the Elegoo UNO R3 as the receiver (RX) on the airplane, utilizing a pair of NRF24L01 transceivers for radio communication.  
@@ -10,6 +13,9 @@ In the current build the system is fully functional with the communication betwe
 
 In the project, I'm currently working on a RTH(Return-To-Home) function. This function will autonomously steer the airplane back home to you. Finding the bearing to home is implemented and continously updated as well as most of the autonomous steering logic. The last step is to add a gyroscope so that we can accurately control the airplanes roll, pitch and yaw axis as to not overrotate on any given axis.  
 
+ 
+
+ 
 
 **Electronic Components:**  
 The list of components have grown quite a lot over the course of the project. Bellow is a list of the most important components.  
@@ -40,14 +46,22 @@ ESP32-WROOM-32 DevkitC v4  (microcontroller)
 1x Power module with On/Off Button for the battery  
 
 
+ 
+
+ 
 **In the early stages:**  
 I began by testing the functionality of joysticks and servos on the Elegoo UNO R3 to ensure they operated as intended. As I transitioned to working with the ESP32, I encountered the need to adapt to a different programming environment, as the ESP32 doesn't utilize AVR like the UNO R3. Instead, it relies on the Espressif IDF framework. To gain familiarity with the ESP32's pin programming, I initiated my learning journey by creating a simple LED blink program.
 
 
+ 
+
+ 
 **Planing**  
 I've drafted an initial TODO list for my workflow, with the understanding that it will evolve as I gain a deeper understanding of the project requirements and potentially add more functionality. The list is divided into two sections: one for completed tasks (DONE) and another for tasks yet to be tackled (TODO).
 
+ 
 
+ 
 **DONE:**  
 1. Successfully configured and tested the joystick's analog input with the ESP32 (for testing purposes).  
 2. ~~Test servo on ESP32.~~ I initially attempted to test the servo on the ESP32, but it proved to be more challenging than expected and ultimately deemed unnecessary, so I skipped this step.  
@@ -76,6 +90,9 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
 10. Implemented an buzzer function.  
 11. Implemented a Return-To-Home function. (For proper airplane steering, more sensors are need along with proper tuning)  
 
+ 
+
+ 
 
 **TODO:**   
  12. Add a gyroscope.  
@@ -85,12 +102,16 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
  16. Display flightroutes on google maps or similar via an app or webpage.  
  17. Have the airplane fly a preconfigured route from google maps or similar.  
 
+ 
 
-
+ 
 **Result and reflections:**  
 So far I'm very satisfied with how the project has turned out. From not being sure that if my initial goal just to control the airplane with a controller was doable, to going far beyond what i thought I could accomplish.
 I have learned so many valuable things from this project and it has been so much fun. At times it has gone smooth and progress have been going in a steady pace. But also many times have i come to a complete stop. Trying to find a out why something does not work. The most challenging part was to write the library for the radio modules, on one side the communication protocol had to be written on the IDF framework and on the other end it was AVR framework. Once i finally could communicate through SPI from both frameworks to the radio modules, I still had one hard nut to crack. That was to make the radio modules properly send and receive a radio transmission. With several important registers on both sides needing to be configured correctly with just 1 bit wrong could result that the whole communication would not work. Also not being able to debug and not even knowing which side or maybe even both was configured wrong made it extremely hard and time comsuming to set everything correct.  
 
+ 
+
+ 
 **Images:**  
 Bellow I would like to present a few images of the airplane as well as the controller.
 
