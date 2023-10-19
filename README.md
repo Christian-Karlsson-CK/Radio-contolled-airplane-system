@@ -82,12 +82,18 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
  13. Add a Airspeed sensor.  
  14. Upgrade from Atmega328p on the airplane to an MCU that has atleast 3 PWM outputs, OR add a PWM module.  
  15. Use built in WIFI module on ESP32 to send flight coordinates to a Cloudservice.  
- 16. Display flightroutes google maps or similar via an app or webpage.  
+ 16. Display flightroutes on google maps or similar via an app or webpage.  
+ 17. Have the airplane fly a preconfigured route from google maps or similar.  
 
 
 
-**Result:**  
-So far I'm very satisfied with the project and it has been a great learning experience. Bellow I would like to present a few pictures of the airplane as well as the controller.
+**Result and reflections:**  
+So far I'm very satisfied with how the project has turned out. From not being sure that if my initial goal just to control the airplane with a controller was doable, to going far beyond what i thought I could accomplish.
+I have learned so many valuable things from this project and it has been so much fun. At times it has gone smooth and progress have been going in a steady pace. But also many times have i come to a complete stop. Trying to find a out why something does not work. The most challenging part was to write the library for the radio modules, on one side the communication protocol had to be written on the IDF framework and on the other end it was AVR framework. Once i finally could communicate through SPI from both frameworks to the radio modules, I still had one hard nut to crack. That was to make the radio modules properly send and receive a radio transmission. With several important registers on both sides needing to be configured correctly with just 1 bit wrong could result that the whole communication would not work. Also not being able to debug and not even knowing which side or maybe even both was configured wrong made it extremely hard and time comsuming to set everything correct.  
+
+**Images and videos:**  
+Bellow I would like to present a few images of the airplane as well as the controller.
+At the very bottom there is also few demonstration videos.
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/de396d31-eda9-464e-b436-7c4fca99fbd5" width=50% height=50%>  
 
@@ -106,17 +112,15 @@ So far I'm very satisfied with the project and it has been a great learning expe
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/fb5a15d4-4220-4c2a-a64d-4a211aa24efe" width=50% height=50%>  
 
 
-**MAIN PROBLEMS:**  
+ 
 
-Initially, when pulling the joystick's y-axis to the top, both the x and y-axis readings showed 1023 instead of the expected ~512. This issue was resolved by adjusting the joystick voltage from 5V to 3.3V since the ADC cannot read up to 5V.
+ 
 
-Similarly, when pulling the joystick's x-axis to the right, both the x and y-axis readings displayed 1023 instead of the expected ~512. This was also addressed by using 3.3V for the joystick voltage.
+ 
 
-The GPIO 13 on the ESP32 was initially JTAG configured, requiring a reset to function as a normal GPIO. Configuring it as an output and setting it to logical HIGH resulted in a reading of ~2.84 volts with a multimeter, causing issues with the LCD. This problem was only identified after extensive troubleshooting including the use of a multimeter, which included accidentally damaging one ESP32 module.
 
-A significant challenge encountered was that the NRF24L01 always returns the FIFO_STATUS register first with every new command though the SPI. When the FIFO_STATUS is empty, it returns a decimal value of 14. Identifying and understanding this behavior required a substantial amount of time and effort.
-
-There seem to be disturbances in certain bytes in the TxData[32] array when sending from Rc controller to the airplane.  
+The radio communication is working:  
+[![Watch the video](https://img.youtube.com/vi/rBgySWtwwQA/hqdefault.jpg)](https://www.youtube.com/embed/rBgySWtwwQA)
 
 
 
