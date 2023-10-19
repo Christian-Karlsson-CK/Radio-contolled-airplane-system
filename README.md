@@ -91,9 +91,8 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
 So far I'm very satisfied with how the project has turned out. From not being sure that if my initial goal just to control the airplane with a controller was doable, to going far beyond what i thought I could accomplish.
 I have learned so many valuable things from this project and it has been so much fun. At times it has gone smooth and progress have been going in a steady pace. But also many times have i come to a complete stop. Trying to find a out why something does not work. The most challenging part was to write the library for the radio modules, on one side the communication protocol had to be written on the IDF framework and on the other end it was AVR framework. Once i finally could communicate through SPI from both frameworks to the radio modules, I still had one hard nut to crack. That was to make the radio modules properly send and receive a radio transmission. With several important registers on both sides needing to be configured correctly with just 1 bit wrong could result that the whole communication would not work. Also not being able to debug and not even knowing which side or maybe even both was configured wrong made it extremely hard and time comsuming to set everything correct.  
 
-**Images and videos:**  
+**Images:**  
 Bellow I would like to present a few images of the airplane as well as the controller.
-At the very bottom there is also few demonstration videos.
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/de396d31-eda9-464e-b436-7c4fca99fbd5" width=50% height=50%>  
 
@@ -118,12 +117,27 @@ At the very bottom there is also few demonstration videos.
 
  
 
-
+**Videos:**  
 The radio communication is working:  
 [![Watch the video](https://img.youtube.com/vi/rBgySWtwwQA/hqdefault.jpg)](https://www.youtube.com/embed/rBgySWtwwQA)
 
+ 
 
+ 
 
+Control surfaces test:  
+[![Watch the video](https://img.youtube.com/vi/xpaVwnn6Poo/hqdefault.jpg)](https://www.youtube.com/embed/xpaVwnn6Poo)
 
+ 
 
+ 
 
+Motor test:  
+[![Watch the video](https://img.youtube.com/vi/RZHSDpDlJe8/hqdefault.jpg)](https://www.youtube.com/embed/RZHSDpDlJe8)
+
+ 
+
+ 
+
+Range test:  
+[![Watch the video](https://img.youtube.com/vi/zjr42EwuS3k/hqdefault.jpg)](https://www.youtube.com/embed/zjr42EwuS3k)
