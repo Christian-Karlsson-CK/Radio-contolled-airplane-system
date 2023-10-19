@@ -20,14 +20,15 @@
 #include "GY_271.h"
 #include "TxData.h"
 #include "RxData.h"
+#include "ReadBatteryVoltage.h"
 //#include "GY_NEO6MV2.h"
 
 #define SWITCH_TO_TX_COMMAND   1
 
 #define COMMAND_BYTE           6
 
-#define REFERENCE_VOLTAGE      4.7
-#define VOLTAGE_UPSCALE_FACTOR 3
+//#define REFERENCE_VOLTAGE      4.7
+//#define VOLTAGE_UPSCALE_FACTOR 3
 
 #define BIT_SET(a, b) ((a) |= (1ULL << (b)))
 #define BIT_CLEAR(a,b) ((a) &= ~(1ULL<<(b)))
@@ -43,7 +44,7 @@ void ActOnReceivedData(uint8_t *RxData);
 
 void TransmitData(uint8_t *TxData);
 
-ReadBatteryVoltage(uint8_t *TxData);
+void ReadBatteryVoltage(uint8_t *TxData);
 
 void setHomeLocationInDecimalDegrees();
 void updateCurrentLocationInDecimalDegrees();

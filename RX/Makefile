@@ -11,9 +11,13 @@ LDFLAGS=-mmcu=$(MCU)
 PORT=\\\\.\\COM6
 BIN=airplane
 OUT=${BIN}.hex
-SOURCES = lcd.c RX.c millis.c analogRead.c servo.c NRF24L01.c BMP280.c gy_271.c gy_neo6mv2.c
+SOURCES = lcd.c RX.c millis.c analogRead.c servo.c NRF24L01.c BMP280.c gy_271.c gy_neo6mv2.c ReadBatteryVoltage.c
 
 DEBUG?=1
+
+GTEST = gtest
+LIBGTEST = C:\msys64\mingw64\lib\libgtest_main.a C:\msys64\mingw64\lib\libgtest.a
+TEST=check.exe
 
 ifeq ($(DEBUG), 1)
 	OUTPUTDIR=bin/debug
@@ -52,5 +56,13 @@ clean:
 
 $(OUTPUTDIR): 
 	@mkdir "$(OUTPUTDIR)"
-		   	
+
+$(TEST): Fake_Function_Test.cpp
+	c:\msys64\mingw64\bin\g++ -o $@ $^ -DF_CPU=16000000UL -I $(GTEST)  $(LIBGTEST)	
+
+
+test: $(TEST)
+	./$(TEST)
+
+
 .PHONY: clean dirs

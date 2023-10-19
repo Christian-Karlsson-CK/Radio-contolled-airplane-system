@@ -58,7 +58,7 @@ void app_main(void)
             TransmitData(TxData);
             TransmitData(TxData);
             
-            sendCounter++; //Testing
+            //sendCounter++; //Testing
             
             NRF24_RXMode();
             //vTaskDelay(pdMS_TO_TICKS(0.5));
@@ -195,15 +195,6 @@ uint8_t listenForIncomingRadioTransmission(uint8_t maxTries){
 
 void updateLCD(){
 
-    if (RxData[BAT_VOLTAGE_WHOLE] > 99)
-        RxData[BAT_VOLTAGE_WHOLE] = 0;
-    
-    if (RxData[BAT_VOLTAGE_DECIMAL] > 99)
-        RxData[BAT_VOLTAGE_DECIMAL] = 0;
-
-    RxData[BAT_VOLTAGE_WHOLE] = 12;
-    RxData[BAT_VOLTAGE_DECIMAL] = 5;
-
     int16_t x = 0;
         x |= (((int16_t)RxData[MAGNETIC_X_LSB]) << 0);
         x |= (((int16_t)RxData[MAGNETIC_X_MSB]) << 8);
@@ -234,11 +225,11 @@ void updateLCD(){
     double altitude_BMP280 = CalculateAltitude(bmp280_pressure);
 
 
-    uint16_t test = 0;
-        test |= (((uint16_t)RxData[30]) << 0);
-        test |= (((uint16_t)RxData[31]) << 8);
+    //uint16_t test = 0;
+    //    test |= (((uint16_t)RxData[30]) << 0);
+    //    test |= (((uint16_t)RxData[31]) << 8);
 
-    uint8_t test2 = RxData[32];
+    //uint8_t test2 = RxData[32];
     
     if (TxData[SWITCH2UP] == 0 && TxData[SWITCH2DOWM] == 0)
     {

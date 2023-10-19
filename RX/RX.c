@@ -36,8 +36,8 @@ int main()
     sei(); // Enable global interrupts
 
     uint8_t RxData[32];
-    uint8_t counter = 0; //Testing
-    uint8_t receivecounter = 0; //Testing
+    //uint8_t counter = 0; //Testing
+    //uint8_t receivecounter = 0; //Testing
 
     while (1) {
         /*REGULAR CODE*************************************************************************************/
@@ -69,7 +69,8 @@ int main()
         if (RxData[COMMAND_BYTE] == SWITCH_TO_TX_COMMAND)
         {   
             //Prepare transmit buffer with sensor readings
-            //ReadBatteryVoltage(TxData);
+            ReadBatteryVoltage(TxData);
+            /*
             receivecounter++; //Testing
             TxData[2] = receivecounter; //Testing
 
@@ -77,7 +78,7 @@ int main()
             {
                 receivecounter = 0;
             }
-            
+            */
             BMP280_ReadTempAndPressure(TxData);
             GY271_ReadXAndY(TxData);
             //GPS data comes from the interrupt
@@ -212,7 +213,9 @@ void ActOnReceivedData(uint8_t *RxData){
 
 }
 
-ReadBatteryVoltage(uint8_t *TxData){
+//Moved to ReadBatteryVoltage.c for unittesting to work
+/*
+void ReadBatteryVoltage(uint8_t *TxData){
 
     float voltage = (analogRead(BATTERY_MONITOR_PIN) / 1023.0) 
                     * REFERENCE_VOLTAGE * VOLTAGE_UPSCALE_FACTOR;
@@ -220,6 +223,7 @@ ReadBatteryVoltage(uint8_t *TxData){
     TxData[BAT_VOLTAGE_WHOLE]   = voltage; //integer number (Heltal)
     TxData[BAT_VOLTAGE_DECIMAL] = (voltage - TxData[BAT_VOLTAGE_WHOLE]) * 100; //Decimal number
 }
+*/
 
 void init_RX(){
     BIT_CLEAR(DDRC, BATTERY_MONITOR_PIN);

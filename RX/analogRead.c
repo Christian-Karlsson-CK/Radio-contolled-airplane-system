@@ -1,4 +1,5 @@
 #include "analogRead.h"
+#include <avr/io.h>
 
 static inline void initADC0(void) {
   ADMUX |= _BV(REFS0);              					    /* reference voltage on AREF (default) */
@@ -6,7 +7,7 @@ static inline void initADC0(void) {
   ADCSRA |= _BV(ADEN);                            /* enable ADC */
 }
 
-uint16_t analogRead(uint8_t apin) {
+unsigned int analogRead(unsigned char apin) {
 
 	initADC0();
 	ADMUX |= (apin);
