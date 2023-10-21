@@ -72,12 +72,12 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
 3.4 Confirmed register read/write operations with the AVR MCU.  
 3.5 Verified proper SPI transmission to the NRF24L01 for the AVR MCU.  
 4. Established communication between the TX and RX MCUs using the NRF24L01 transceiver.  
-4.1 Addressed sporadic message reception on RX to ensure consistent and expected performance.    
+4.1 Addressed sporadic message reception on RX to ensure consistent and expected performance.  
 5. Properly sent joystick input from TX to RX using NRF24L01 transceiver, RX then move a servo as intended.  
 5.1 Created a voltage divider with resistors to monitor battery voltage. (3-cell LIPO: ~9.9V = empty, ~12.8V = full)  
 5.2 Transmitted battery voltage data from AVR to ESP32.  
 5.3 Display voltage on LCD screen on from the ESP32. (This included changing a LCD lib from AVR to work in IDF environment)  
-5.4 Enable TX and RX to switch between TX and RX mode to both send and receive data in a controlled manner. (mostly controlled, small servo fluctuations)  
+5.4 Enable TX and RX to switch between TX and RX mode to both send and receive data in a controlled manner.  
 6. Using the ESP32 test that ESC and motor works as intended.  
 7. Transmitted joystick input from TX to RX for ESC control.  
 7.1 Connected all buttons, switches, joysticks and everything else needed to test that the whole system functions as expected.  
@@ -146,7 +146,7 @@ Schematic of the PCB(Printed circuit board)
  
 
 **Videos:**  
-The radio communication is working:  
+The radio communication is working (this was recorded when I just completed step 5 in the TODO list):  
 [![Watch the video](https://img.youtube.com/vi/rBgySWtwwQA/hqdefault.jpg)](https://www.youtube.com/embed/rBgySWtwwQA)
 
  
@@ -167,5 +167,5 @@ Motor test:
 
  
 
-Range test:  
+Initial range test of about 250 meters (According to the datasheet for the radio module it can reach over 1km in range):  
 [![Watch the video](https://img.youtube.com/vi/zjr42EwuS3k/hqdefault.jpg)](https://www.youtube.com/embed/zjr42EwuS3k)
