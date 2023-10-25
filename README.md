@@ -1,12 +1,31 @@
 # Radio controlled airplane system
-Embedded C
+#### Embedded C
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/3f31e514-5203-45c5-8047-099c538987e7" width="500" height="500">  
 
- 
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Electronic Components](#electronic-components)
+  - [On the airplane](#on-the-airplane)
+  - [On the controller](#on-the-controller)
+- [In the early stages](#in-the-early-stages)
+- [Planing](#planing)
+  - [DONE](#done)
+  - [TODO](#todo)
+- [Result and reflections](#result-and-reflections)
+- [Images](#images)
+  - [Airplane](#airplane)
+  - [Controller](#controller)
+  - [Schematic of the PCB](#schematic-of-the-pcb)
+- [Videos](#videos)
+  - [Radio communication](#radio-communication)
+  - [Control surfaces test](#control-surfaces-test)
+  - [Motor test](#motor-test)
+  - [Range test](#range-test)
 
  
-**Introduction**  
+## Introduction
 The following readme file outlines my approach to testing, learning, and developing a fully functional radio controlled airplane system.  
 I will employ the ESP32 as the transmitter (TX) on the controller and the Elegoo UNO R3 as the receiver (RX) on the airplane, utilizing a pair of NRF24L01 transceivers for radio communication.  
 In the current build the system is fully functional with the communication between the controller and airplane working in both directions. This enables both precise control over the airplanes control surfaces as well as enabling realtime information from the airplane to be displayed on the controllers LCD screen such as the current voltage of the battery, altitude, heading, speed, visible GPS satellites, longitude and latitude and more.  
@@ -15,15 +34,13 @@ In the project, I'm currently working on a RTH(Return-To-Home) function. This fu
 
  
 
- 
-
-**Electronic Components:**  
+## Electronic Components
 The list of components have grown quite a lot over the course of the project. Bellow is a list of the most important components.  
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/81dbc280-9ac2-4534-98b2-617f00ca8722" width="400" height="400">  
 
 
-**On the airplane:**  
+#### On the airplane
 Elegoo UNO R3 (microcontroller)  
 1x NRF24L01+ Transceiver  
 1x BMP-280 (airpressure & temperature sensor)  
@@ -36,7 +53,7 @@ Elegoo UNO R3 (microcontroller)
 1x Servo Rudder  
 
 
-**On the controller:**  
+#### On the controller
 ESP32-WROOM-32 DevkitC v4  (microcontroller)  
 1x NRF24L01+ Transceiver  
 1x 1602 LCD display  
@@ -49,20 +66,20 @@ ESP32-WROOM-32 DevkitC v4  (microcontroller)
  
 
  
-**In the early stages:**  
+## In the early stages
 I began by testing the functionality of joysticks and servos on the Elegoo UNO R3 to ensure they operated as intended. As I transitioned to working with the ESP32, I encountered the need to adapt to a different programming environment, as the ESP32 doesn't utilize AVR like the UNO R3. Instead, it relies on the Espressif IDF framework. To gain familiarity with the ESP32's pin programming, I initiated my learning journey by creating a simple LED blink program.
 
 
  
 
  
-**Planing**  
+## Planing
 I've drafted an initial TODO list for my workflow, with the understanding that it will evolve as I gain a deeper understanding of the project requirements and potentially add more functionality. The list is divided into two sections: one for completed tasks (DONE) and another for tasks yet to be tackled (TODO).
 
  
 
  
-**DONE:**  
+#### DONE
 1. Successfully configured and tested the joystick's analog input with the ESP32 (for testing purposes).  
 2. ~~Test servo on ESP32.~~ I initially attempted to test the servo on the ESP32, but it proved to be more challenging than expected and ultimately deemed unnecessary, so I skipped this step.  
 3. Wrote a library for the NRF24L01 transceiver for ESP32.  
@@ -94,7 +111,7 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
 
  
 
-**TODO:**   
+#### TODO 
  12. Add a gyroscope.  
  13. Add a Airspeed sensor.  
  14. Upgrade from Atmega328p on the airplane to an MCU that has atleast 3 PWM outputs, OR add a PWM module.  
@@ -105,22 +122,26 @@ I've drafted an initial TODO list for my workflow, with the understanding that i
  
 
  
-**Result and reflections:**  
+## Result and reflections
 So far I'm very satisfied with how the project has turned out. From not being sure that if my initial goal just to control the airplane with a controller was doable, to going far beyond what i thought I could accomplish.
 I have learned so many valuable things from this project and it has been so much fun. At times it has gone smooth and progress have been going in a steady pace. But also many times have i come to a complete stop. Trying to find a out why something does not work. The most challenging part was to write the library for the radio modules, on one side the communication protocol had to be written on the IDF framework and on the other end it was AVR framework. Once i finally could communicate through SPI from both frameworks to the radio modules, I still had one hard nut to crack. That was to make the radio modules properly send and receive a radio transmission. With several important registers on both sides needing to be configured correctly with just 1 bit wrong could result that the whole communication would not work. Also not being able to debug and not even knowing which side or maybe even both was configured wrong made it extremely hard and time comsuming to set everything correct.  
 
  
 
  
-**Images:**  
+## Images
 Bellow I would like to present a few images of the airplane as well as the controller.
+ 
 
+#### Airplane
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/de396d31-eda9-464e-b436-7c4fca99fbd5" width=50% height=50%>  
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/364237dd-cc9a-4c2f-98fc-005221319f82" width=50% height=50%>  
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/7908696c-894b-46ea-b56c-403a6aa9a52f" width=50% height=50%>  
+ 
 
+### Controller
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/2a552810-6807-40c5-a5ee-77b1afed4c69" width=50% height=50%>  
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/2f7a56d4-3a23-4601-a90b-aca4b5db819c" width=50% height=50%>  
@@ -131,41 +152,36 @@ Bellow I would like to present a few images of the airplane as well as the contr
 
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/fb5a15d4-4220-4c2a-a64d-4a211aa24efe" width=50% height=50%>  
 
-
  
-
-Schematic of the PCB(Printed circuit board)  
+### Schematic of the PCB
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/050ca8a8-93ce-4f8f-884d-4a8f4bfbebcf" width=50% height=50%>  
 <img src="https://github.com/Christian-Karlsson-CK/Radio-controlled-airplane-system/assets/106676664/92c86ec7-d234-4159-b894-85b8b220d25e" width=50% height=50%>  
 
-
  
 
- 
+## Videos
 
- 
-
-**Videos:**  
-The radio communication is working (this was recorded when I just completed step 5 in the TODO list):  
+### Radio communication
+Early stages of the radio communication module (this was recorded when I just completed step 5 in the TODO list):  
 [![Watch the video](https://img.youtube.com/vi/rBgySWtwwQA/hqdefault.jpg)](https://www.youtube.com/embed/rBgySWtwwQA)
 
  
 
  
 
-Control surfaces test:  
+### Control surfaces test
 [![Watch the video](https://img.youtube.com/vi/xpaVwnn6Poo/hqdefault.jpg)](https://www.youtube.com/embed/xpaVwnn6Poo)
 
  
 
  
 
-Motor test:  
+### Motor test
 [![Watch the video](https://img.youtube.com/vi/RZHSDpDlJe8/hqdefault.jpg)](https://www.youtube.com/embed/RZHSDpDlJe8)
 
  
 
  
-
+### Range test
 Initial range test of about 250 meters (According to the datasheet for the radio module it can reach over 1km in range):  
 [![Watch the video](https://img.youtube.com/vi/zjr42EwuS3k/hqdefault.jpg)](https://www.youtube.com/embed/zjr42EwuS3k)
